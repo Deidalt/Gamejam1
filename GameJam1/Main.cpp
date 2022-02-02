@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
 	}
 	Grid[10][10].Object = 5;
 	
-	Year = 0; //Game Starts
+	Year = 0; //Game Starts here
 	timegame = SDL_GetTicks();
 	while (EndMain) {
 		if (Year >= 0) {
-			Year = (SDL_GetTicks() - timegame) / 2000; //+1 Year every 2 sec
+			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec 
 			if (PastYear != Year) {
-				//Year changed, Turn calcul
+				//Year changed, Turn calculs
 				printf("Tree=%d Pop=%d Food=%d\n", Ress.Trees,Ress.Pop,Ress.Food);
 				Ress.Animals++;
 				Ress.Hunt = 0;

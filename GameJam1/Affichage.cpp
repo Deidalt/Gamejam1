@@ -121,6 +121,8 @@ void Afficher() {
         //Render Tiles one by one
         //Tiles
         SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png");
+        //i et j sont inversés à l'affichage à cause de l'isometrie
+        //reverse i and j for isometric
         for (i = 0;i < LMAP;i++) {
             for (j = 0;j < HMAP;j++) {
                 QueryText(CaseT, &wText, &hText);
@@ -128,58 +130,60 @@ void Afficher() {
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
                 SDL_Rect posObject = { ObjectIsoP.x - posMap.x,ObjectIsoP.y - posMap.y,wText,hText  };
                 //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };
-                //SDL_RenderCopy(Renderer, TestT[Grid[i][j].Object], NULL, &posObject);
-                if (Grid[i][j].Object == 1)
+                //SDL_RenderCopy(Renderer, TestT[Grid[j][i].Object], NULL, &posObject);
+                if (Grid[j][i].Object == 1)
                     SDL_SetTextureColorMod(CaseT, 152, 57, 0);
-                else if (Grid[i][j].Object == 2)
+                else if (Grid[j][i].Object == 2)
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
-                else if (Grid[i][j].Object == 3)
+                else if (Grid[j][i].Object == 3)
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
-                else if (Grid[i][j].Object == 4) {
-                    if (Grid[i][j].State == 4)
+                else if (Grid[j][i].Object == 4) {
+                    if (Grid[j][i].State == 4)
                         SDL_SetTextureColorMod(CaseT, 100, 150, 100);
                     else
                         SDL_SetTextureColorMod(CaseT, 100, 255, 100);
+                    for (int arb = 0; arb < 4 - Grid[j][i].State; arb++) { //
+                        //Mapping des arbres RandTree à set en static
+                        int randTree = 0; //rand à faire
+                        //int randTree = j % 3;
+                        QueryText(TreeAT[randTree], &wText, &hText);
+                        SDL_Rect posTreeA = { (LCASE * (LMAP - i - 1) + LCASE * j) * Zoom - posMap.x ,hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom - posMap.y - hText,wText,hText };
+                        if (arb == 0)
+                            posTreeA.x += 75 * Zoom;
+                        else if (arb == 1)
+                            posTreeA.x += 225 * Zoom;
+                        else if (arb == 2) {
+                            posTreeA.x += 150 * Zoom;
+                            posTreeA.y -= 40 * Zoom;
+                        }
+                        else if (arb == 3) {
+                            posTreeA.x += 150 * Zoom;
+                            posTreeA.y += 40 * Zoom;
+                        }
+                        if (randTree == 0) {
+                            posTreeA.x -= 67 * Zoom;
+                            posTreeA.y -= 165 * Zoom;
+                        }
+                        if (randTree == 1) {
+                            posTreeA.x -= 165 * Zoom;
+                            posTreeA.y -= 135 * Zoom;
+                        }
+                        if (randTree == 2) {
+                            posTreeA.x -= 215 * Zoom;
+                            posTreeA.y -= 167 * Zoom;
+                        }
+                        //printf("dda %d %d %d %d\n", posTreeA.x, posTreeA.y, posTreeA.w, posTreeA.h);
+                        SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
+                    }
                 }
-                else if (Grid[i][j].Object == 5)
+                else if (Grid[j][i].Object == 5)
                     SDL_SetTextureColorMod(CaseT, 200, 200, 100);
-                else if (Grid[i][j].Object == 6)
+                else if (Grid[j][i].Object == 6)
                     SDL_SetTextureColorMod(CaseT, 350, 300, 200);
                 else
                     SDL_SetTextureColorMod(CaseT, 255, 255, 255);
-                //SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
-                for (int arb = 0; arb < 4; arb++) {
-                    int randTree = rand() % 3;
-                    //int randTree = j % 3;
-                    QueryText(TreeAT[randTree], &wText, &hText);
-                    SDL_Rect posTreeA = { (150 * (LMAP-i-1) + 150 * j) * Zoom - posMap.x ,hText2 / 2 + ((74 * i) - (74 * (LMAP-j-1))) * Zoom - posMap.y - hText,wText,hText };
-                    if (arb == 0)
-                        posTreeA.x += 75 * Zoom;
-                    else if (arb == 1)
-                        posTreeA.x += 225 * Zoom;
-                    else if (arb == 2) {
-                        posTreeA.x += 150 * Zoom;
-                        posTreeA.y -= 40 * Zoom;
-                    }
-                    else if (arb == 3) {
-                        posTreeA.x += 150 * Zoom;
-                        posTreeA.y += 40 * Zoom;
-                    }
-                    if (randTree == 0) {
-                        posTreeA.x -= 67 * Zoom;
-                        posTreeA.y -= 165 * Zoom;
-                    }
-                    if (randTree == 1) {
-                        posTreeA.x -= 165 * Zoom;
-                        posTreeA.y -= 135 * Zoom;
-                    }
-                    if (randTree == 2) {
-                        posTreeA.x -= 215 * Zoom;
-                        posTreeA.y -= 167 * Zoom;
-                    }
-                    //printf("dda %d %d %d %d\n", posTreeA.x, posTreeA.y, posTreeA.w, posTreeA.h);
-                    SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
-                }
+                SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
+                
             }
         }
         SDL_DestroyTexture(CaseT);
@@ -190,14 +194,14 @@ void Afficher() {
     SDL_Point posRess = { 1000 * Zoom,50 * Zoom };
     TTFrender(buff1, ArialNarrowB40, { 255,255,255 }, posRess);
     sprintf(buff1, "-%d",Ress.Pop);
-    posRess.y += 40 * Zoom;
+    posRess.y += 70 * Zoom;
     TTFrender(buff1, ArialNarrowB40, { 255,150,150 }, posRess);
     sprintf(buff1, "Gathering +5");
-    posRess.y += 40 * Zoom;
+    posRess.y += 70 * Zoom;
     TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     if (Ress.Hunt) {
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
-        posRess.y += 40 * Zoom;
+        posRess.y += 70 * Zoom;
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
 
