@@ -8,7 +8,7 @@
 
 void TTFrender(char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
-    //can write one line abc
+    //can write one line abcdef
     SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
     SDL_Texture* HudRessT = SDL_CreateTextureFromSurface(Renderer, HudRessS);
     SDL_Rect posT = { posft.x,posft.y,HudRessS->w,HudRessS->h };
