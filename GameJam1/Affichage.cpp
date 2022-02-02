@@ -15,6 +15,8 @@ void TTFrender(char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
     SDL_FreeSurface(HudRessS);
     SDL_DestroyTexture(HudRessT);
+    
+    // demo merge
 }
 
 void Afficher() {
