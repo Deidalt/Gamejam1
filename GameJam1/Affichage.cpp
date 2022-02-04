@@ -6,7 +6,7 @@
 #include "Fonctions.h"
 
 
-void TTFrender(char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
+void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
     //can write one line
     SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
@@ -15,8 +15,37 @@ void TTFrender(char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
     SDL_FreeSurface(HudRessS);
     SDL_DestroyTexture(HudRessT);
-    
-    // demo merge
+}
+
+void InitAffichage() {
+    //Libs init
+    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED/*   | SDL_WINDOW_ALLOW_HIGHDPI*/);
+    if (Screen == NULL)
+        printf("NULL Window\n");
+    Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
+    if (Renderer == NULL)
+        printf("NULL renderer\n");
+    if (TTF_Init() == -1)
+        printf("TTF %s\n", TTF_GetError());
+
+    SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Images/Case.png", "rb"), 1);
+
+    if (IconeExe == NULL)
+        printf("ICONULL %s\n", SDL_GetError());
+
+    SDL_SetWindowIcon(Screen, IconeExe);
+    SDL_FreeSurface(IconeExe);
+    //SDL_RenderSetLogicalSize(Renderer,Wecran/zoom4K,Hecran/zoom4K); //resize tout l'écran
+
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best"); //utile pour les rotations de Sdl_renderCopyEx
+    //SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, "0");
+    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1"); //0 par defaut = pas de minimize
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+    ScreenL.x = DM.w;
+    ScreenL.y = DM.h;
+    Zoom = ((float)ScreenL.y) / H4K;
+    printf("Zoom %.2f\n", Zoom);
 }
 
 void Afficher() {
@@ -26,43 +55,15 @@ void Afficher() {
     int i = 0, j = 0; //loop
     int wText = 0, hText = 0, wText2,hText2; //dimensions des textures récupérées
     char buff1[100]; //
-    float Zoom4K = float(ScreenL.y) / H4K;
-    if (Initialised == 0) {
-        //Libs init
-        Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED/*   | SDL_WINDOW_ALLOW_HIGHDPI*/);
-        if (Screen == NULL)
-            printf("NULL Window\n");
-        Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
-        if (Renderer == NULL)
-            printf("NULL renderer\n");
-        if (TTF_Init() == -1)
-            printf("TTF %s\n", TTF_GetError());
-
-        SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Images/Case.png", "rb"), 1);
-        if (IconeExe == NULL)
-            printf("ICONULL %s\n", SDL_GetError());
-        SDL_SetWindowIcon(Screen, IconeExe);
-        SDL_FreeSurface(IconeExe);
-        //SDL_RenderSetLogicalSize(Renderer,Wecran/zoom4K,Hecran/zoom4K); //resize tout l'écran
-
-        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best"); //utile pour les rotations de Sdl_renderCopyEx
-        //SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, "0");
-        SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1"); //0 par defaut = pas de minimize
-        SDL_DisplayMode DM;
-        SDL_GetCurrentDisplayMode(0, &DM);
-        ScreenL.x = DM.w;
-        ScreenL.y = DM.h;
-        Zoom = float(ScreenL.y) / H4K;
-        printf("Zoom %.2f\n", Zoom);
-        Initialised = 1;
-    }
+    float Zoom4K = ((float)ScreenL.y) / H4K;
 
     static SDL_Texture* TestT[6];
     static TTF_Font* ArialNarrowB40 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 40);
     static SDL_Texture* TreeAT[4];
     static SDL_Texture* TreeBT[4];
     static SDL_Texture* TreeCT[4];
-    if(Initialised==1){
+
+    if (Initialised == 0){
         //Vars init
         SDL_Surface* TestS[8];
         for (int m = 0;m < 8;m++) {
@@ -134,13 +135,13 @@ void Afficher() {
                 SDL_Rect posObject = { ObjectIsoP.x - posMap.x,ObjectIsoP.y - posMap.y,wText,hText  };
                 //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };
                 //SDL_RenderCopy(Renderer, TestT[Grid[j][i].Object], NULL, &posObject);
-                if (Grid[j][i].Object == 1)
+                if (Grid[j][i].Object == MOUNTAIN)
                     SDL_SetTextureColorMod(CaseT, 152, 57, 0);
-                else if (Grid[j][i].Object == 2)
+                else if (Grid[j][i].Object ==RIVER)
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
-                else if (Grid[j][i].Object == 3)
+                else if (Grid[j][i].Object == SEA)
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
-                else if (Grid[j][i].Object == 4) {
+                else if (Grid[j][i].Object == FOREST) {
                     if (Grid[j][i].State == 4)
                         SDL_SetTextureColorMod(CaseT, 100, 150, 100);
                     else
@@ -150,39 +151,39 @@ void Afficher() {
                         int randTree = 0; //rand à faire
                         //int randTree = j % 3;
                         QueryText(TreeAT[randTree], &wText, &hText);
-                        SDL_Rect posTreeA = { (LCASE * (LMAP - i - 1) + LCASE * j) * Zoom - posMap.x ,hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom - posMap.y - hText,wText,hText };
+                        SDL_Rect posTreeA = { static_cast<int>((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posMap.x ,hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom - posMap.y - hText,wText,hText };
                         if (arb == 0)
-                            posTreeA.x += 75 * Zoom;
+                            posTreeA.x += static_cast<int>(75 * Zoom);
                         else if (arb == 1)
-                            posTreeA.x += 225 * Zoom;
+                            posTreeA.x += static_cast<int>(225 * Zoom);
                         else if (arb == 2) {
-                            posTreeA.x += 150 * Zoom;
-                            posTreeA.y -= 40 * Zoom;
+                            posTreeA.x += static_cast<int>(150 * Zoom);
+                            posTreeA.y -= static_cast<int>(40 * Zoom);
                         }
                         else if (arb == 3) {
-                            posTreeA.x += 150 * Zoom;
-                            posTreeA.y += 40 * Zoom;
+                            posTreeA.x += static_cast<int>(150 * Zoom);
+                            posTreeA.y += static_cast<int>(40 * Zoom);
                         }
                         if (randTree == 0) {
-                            posTreeA.x -= 67 * Zoom;
-                            posTreeA.y -= 165 * Zoom;
+                            posTreeA.x -= static_cast<int>(67 * Zoom);
+                            posTreeA.y -= static_cast<int>(165 * Zoom);
                         }
                         if (randTree == 1) {
-                            posTreeA.x -= 165 * Zoom;
-                            posTreeA.y -= 135 * Zoom;
+                            posTreeA.x -= static_cast<int>(165 * Zoom);
+                            posTreeA.y -= static_cast<int>(135 * Zoom);
                         }
                         if (randTree == 2) {
-                            posTreeA.x -= 215 * Zoom;
-                            posTreeA.y -= 167 * Zoom;
+                            posTreeA.x -= static_cast<int>(215 * Zoom);
+                            posTreeA.y -= static_cast<int>(167 * Zoom);
                         }
                         //printf("dda %d %d %d %d\n", posTreeA.x, posTreeA.y, posTreeA.w, posTreeA.h);
                         SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
                     }
                 }
-                else if (Grid[j][i].Object == 5)
-                    SDL_SetTextureColorMod(CaseT, 200, 200, 100);
-                else if (Grid[j][i].Object == 6)
-                    SDL_SetTextureColorMod(CaseT, 350, 300, 200);
+                else if (Grid[j][i].Object == HUT)
+                    SDL_SetTextureColorMod(CaseT, 0, 255, 0);
+                else if (Grid[j][i].Object == HOUSE)
+                    SDL_SetTextureColorMod(CaseT, 255, 0, 0);
                 else
                     SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                 SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
@@ -195,21 +196,22 @@ void Afficher() {
     //HUD HAUT
     #pragma warning(suppress : 4996)
     sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d",Ress.Pop,Ress.Trees,Ress.Animals);
-    SDL_Point posRess = { 1000 * Zoom,50 * Zoom };
-    TTFrender(buff1, ArialNarrowB40, { 255,255,255 }, posRess);
+    SDL_Point posRess = { static_cast<int>(1000 * Zoom), static_cast<int>(50 * Zoom) };
+    TTFrender(buff1, ArialNarrowB40, { 255, 255, 255 }, posRess);
     #pragma warning(suppress : 4996)
-    sprintf(buff1, "-%d",Ress.Pop);
-    posRess.y += 70 * Zoom;
-    TTFrender(buff1, ArialNarrowB40, { 255,150,150 }, posRess);
+    sprintf(buff1, "-%d", Ress.Pop);
+    posRess.y += static_cast<int>(70 * Zoom);
+    TTFrender(buff1, ArialNarrowB40, { 255, 150, 150 }, posRess);
     #pragma warning(suppress : 4996)
     sprintf(buff1, "Gathering +5");
-    posRess.y += 70 * Zoom;
-    TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+    printf("%d :: buff1 = %s\n", __LINE__, buff1); fflush(stdout);
+    posRess.y += static_cast<int>(70 * Zoom);
+    TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     if (Ress.Hunt) {
         #pragma warning(suppress : 4996)
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
-        posRess.y += 70 * Zoom;
-        TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+        posRess.y += static_cast<int>(70 * Zoom);
+        TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     }
 
     SDL_RenderPresent(Renderer);

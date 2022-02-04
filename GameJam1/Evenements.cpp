@@ -58,11 +58,11 @@ void Evenement() {
         }
 	}//fin while event
     if(LastMove.x==1)
-        posMap.x += LCASE * Zoom;
+        posMap.x += static_cast<int>(LCASE * Zoom);
     else if (LastMove.x == 2)
-        posMap.x -= LCASE * Zoom;
+        posMap.x -= static_cast<int>(LCASE * Zoom);
     if (LastMove.y == 3)
-        posMap.y += LCASE * Zoom;
+        posMap.y += static_cast<int>(LCASE * Zoom);
     else if (LastMove.y == 4)
-        posMap.y -= LCASE * Zoom;
+        posMap.y -= static_cast<int>(LCASE * Zoom);
 }

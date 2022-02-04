@@ -17,7 +17,7 @@
 #define H4K 2160
 #define W2K 1920
 #define H2K 1080
-#define LCASE 158
+#define LCASE 158 // @TODO: choisir l'un des 2 LCASE
 #define HCASE 79
 #define TIMETURN 2000
 
@@ -30,8 +30,10 @@ extern int Eras;
 extern float Zoom;
 extern SDL_Point ScreenL;
 
+typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, SHIP } CaseType;
+
 struct Case {
-	int Object;//0 = Vide, 1= montagne,2=riviere,3=mer,4=arbre, 5=hut, 6 =house, 7 =appart ,8 = Moulin, 9=Bateau
+	CaseType Object;//0 = Vide, 1= montagne,2=riviere,3=mer,4=arbre, 5=hut, 6 =house, 7 =appart ,8 = Moulin, 9=Bateau
 	int State; //0= empty, 1=const 2=destru, (sert aussi à indiquer le nombre d'arbre détruit dans la case)
 };
 extern Case Grid[LMAP][HMAP];
@@ -50,7 +52,9 @@ struct Ressources {
 };
 extern Ressources Ress;
 
-
-
+#define COL_FOREST 20
+#define LINE_FOREST 10
+#define FOREST_W 10
+#define FOREST_H 10
 
 #endif

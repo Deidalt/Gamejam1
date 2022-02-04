@@ -12,6 +12,6 @@ SDL_Point ToIso(SDL_Point point) {
 void QueryText(SDL_Texture* Texture, int* wText, int* hText) {
 	//Get sizes and zoom it
 	SDL_QueryTexture(Texture, NULL, NULL, wText, hText);
-	*wText = *wText * Zoom;
-	*hText = *hText * Zoom;
+	*wText = static_cast<int>(*wText * Zoom);
+	*hText = static_cast<int>(*hText * Zoom);
 }
