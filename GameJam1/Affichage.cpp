@@ -89,10 +89,13 @@ void Afficher() {
         //CaseT = IMG_LoadTexture(Renderer,"Images/Case.png");
         Initialised = 2;
         for (i = 0;i < 4;i++) {
+            #pragma warning(suppress : 4996)
             sprintf(buff1, "Assets/Tiles/Trees/tree_%d_tempere.png", i+1);
             TreeAT[i] = IMG_LoadTexture(Renderer, buff1);
+            #pragma warning(suppress : 4996)
             sprintf(buff1, "Assets/Tiles/Trees/tree_%d_snowy.png", i+1);
             TreeBT[i] = IMG_LoadTexture(Renderer, buff1);
+            #pragma warning(suppress : 4996)
             sprintf(buff1, "Assets/Tiles/Trees/tree_%d_glacial.png", i+1);
             TreeCT[i] = IMG_LoadTexture(Renderer, buff1);
         }
@@ -190,16 +193,20 @@ void Afficher() {
     }
 
     //HUD HAUT
+    #pragma warning(suppress : 4996)
     sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d",Ress.Pop,Ress.Trees,Ress.Animals);
     SDL_Point posRess = { 1000 * Zoom,50 * Zoom };
     TTFrender(buff1, ArialNarrowB40, { 255,255,255 }, posRess);
+    #pragma warning(suppress : 4996)
     sprintf(buff1, "-%d",Ress.Pop);
     posRess.y += 70 * Zoom;
     TTFrender(buff1, ArialNarrowB40, { 255,150,150 }, posRess);
+    #pragma warning(suppress : 4996)
     sprintf(buff1, "Gathering +5");
     posRess.y += 70 * Zoom;
     TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     if (Ress.Hunt) {
+        #pragma warning(suppress : 4996)
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
         posRess.y += 70 * Zoom;
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);

@@ -1,5 +1,4 @@
-
-
+#define SDL_MAIN_HANDLED
 
 #include <signal.h>
 
@@ -23,6 +22,7 @@ SDL_Point ScreenL = { 0,0 }; //my Reso
 
 int main(int argc, char* argv[])
 {
+	SDL_SetMainReady();
 	srand(time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
