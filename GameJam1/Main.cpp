@@ -44,23 +44,25 @@ int main(int argc, char* argv[])
 	
 	Year = 0; //Game Starts here
 	timegame = SDL_GetTicks();
+	Ress.River = 1;
+	Ress.Harvest = 0;
+	Ress.Fish = 0;
 	while (EndMain) {
 		if (Year >= 0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec 
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
 				printf("Tree=%d Pop=%d Food=%d\n", Ress.Trees,Ress.Pop,Ress.Food);
-				Ress.Animals++;
+				if(Ress.Animals)
+					Ress.Animals = Ress.Animals;
 				Ress.Hunt = 0;
-				Ress.Fish = 0;
-				Ress.Harvest = 0;
 				//Human turn
 				if (Eras == 1) {
 					//tribal
-					int food = Ress.Pop; //total food to search per turn
 					Ress.Pop++;
+					int food = Ress.Pop; //total food to search per turn
 					Ress.Trees-=2; //trees consumed per turn
-					food -= 5;
+					food -= 5; //Gathering
 					int found = 0;
 					int Treecut = 2; //Total trees to cut
 					while (food > 0 && Ress.Animals > 0) {
@@ -98,8 +100,11 @@ int main(int argc, char* argv[])
 							}
 						}
 					}
-					if (Ress.Pop >= 20)
+					if (Ress.Pop >= 10) {
+						//From Tribal to Medieval
 						Eras++;
+
+					}
 				}
 				else if (Eras == 2) {
 					//medieval
@@ -107,7 +112,61 @@ int main(int argc, char* argv[])
 					Ress.Trees-=5;
 					int found = 0;
 					int Treecut = 5;
-					
+					int food = Ress.Pop; //total food to search per turn
+					food -= 5;
+					while (food > 0) {
+						if (Ress.Fish) {
+							//1 fisher
+							food -= 10;
+							
+						}
+						if (Ress.River > 0) {
+							//Harvest
+							int cptHarvest = Ress.Harvest;
+							while (cptHarvest) {
+								food -= 5;
+								cptHarvest--;
+							}
+						}
+						if (food >0 && Ress.Animals > 0) {
+							//Hunt
+							food -= 5;
+							Ress.Hunt++;
+							Ress.Animals--;
+						}
+					} //end food
+					if (Grid[14][20].Object != 8) {
+						//build Mill
+						Grid[14][20].Object = 8;
+						Grid[14][20].State = 1;
+						Treecut++;
+					}
+					if (Ress.Fish == 0) {
+						//Build boat
+						Ress.Fish = 1;
+						Treecut += 1;
+					}
+					if (Ress.River) {
+						//build fields
+						int cptHunt = Ress.Hunt;
+						while (cptHunt) {
+							cptHunt--;
+							Ress.Harvest++;
+							Treecut++;
+							for (i = 14;i > 0;i--) {
+								for (j = 20;j < 27;j++) {
+									if (Grid[i][j].Object == 0) {
+										if (Grid[i+1][j].Object == 8 || Grid[i - 1][j].Object == 8 || Grid[i][j-1].Object == 8 || Grid[i][j+1].Object == 8) {
+											Grid[i][j].Object = 8;
+											Grid[i][j].State = 2;
+											i = 0;
+											j = 30;
+										}
+									}
+								}
+							}
+						}
+					}
 					if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
 						//Build House
 						Ress.Houses++;

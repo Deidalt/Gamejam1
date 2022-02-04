@@ -31,8 +31,8 @@ extern float Zoom;
 extern SDL_Point ScreenL;
 
 struct Case {
-	int Object;//0 = Vide, 1= montagne,2=riviere,3=mer,4=arbre, 5=hut, 6 =house, 7 =appart ,8 = Moulin, 9=Bateau
-	int State; //0= empty, 1=const 2=destru, (sert aussi à indiquer le nombre d'arbre détruit dans la case)
+	int Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Boat
+	int State; //0= empty, 1=const 2=destru, (sert aussi à indiquer le nombre d'arbre détruit dans la case) (1=Mill or 2=Field)
 };
 extern Case Grid[LMAP][HMAP];
 
@@ -47,6 +47,7 @@ struct Ressources {
 	int Hunt;
 	int Fish;
 	int Harvest;
+	int River;
 };
 extern Ressources Ress;
 

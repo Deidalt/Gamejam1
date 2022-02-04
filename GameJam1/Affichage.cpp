@@ -177,9 +177,17 @@ void Afficher() {
                     }
                 }
                 else if (Grid[j][i].Object == 5)
-                    SDL_SetTextureColorMod(CaseT, 200, 200, 100);
+                    SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                 else if (Grid[j][i].Object == 6)
-                    SDL_SetTextureColorMod(CaseT, 350, 300, 200);
+                    SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                else if (Grid[j][i].Object == 7)
+                    SDL_SetTextureColorMod(CaseT, 102, 0, 102);
+                else if (Grid[j][i].Object == 8) {
+                    if(Grid[j][i].State==1)
+                    SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                    if(Grid[j][i].State==2)
+                    SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                }
                 else
                     SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                 SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
@@ -201,6 +209,16 @@ void Afficher() {
     TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     if (Ress.Hunt) {
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
+        posRess.y += 70 * Zoom;
+        TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+    }
+    if (Ress.Fish) {
+        sprintf(buff1, "Fish +%d", Ress.Fish * 10);
+        posRess.y += 70 * Zoom;
+        TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+    }
+    if (Ress.Harvest) {
+        sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
         posRess.y += 70 * Zoom;
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
