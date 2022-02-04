@@ -47,14 +47,14 @@ int main(int argc, char* argv[])
 	Ress.River = 1;
 	Ress.Harvest = 0;
 	Ress.Fish = 0;
+	Ress.Animals = 10;
 	while (EndMain) {
 		if (Year >= 0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec 
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
-				printf("Tree=%d Pop=%d Food=%d\n", Ress.Trees,Ress.Pop,Ress.Food);
 				if(Ress.Animals)
-					Ress.Animals = Ress.Animals;
+					Ress.Animals++;
 				Ress.Hunt = 0;
 				//Human turn
 				if (Eras == 1) {
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 							}
 						}
 					}
-					if (Ress.Pop >= 10) {
+					if (Ress.Pop >= 20) {
 						//From Tribal to Medieval
 						Eras++;
 
@@ -134,6 +134,12 @@ int main(int argc, char* argv[])
 							Ress.Hunt++;
 							Ress.Animals--;
 						}
+						else while (food > 0) {
+							//build new temporary boat
+							food -= 10;
+							Ress.Fish++;
+							Treecut++;
+						}
 					} //end food
 					if (Grid[14][20].Object != 8) {
 						//build Mill
@@ -148,7 +154,8 @@ int main(int argc, char* argv[])
 					}
 					if (Ress.River) {
 						//build fields
-						int cptHunt = Ress.Hunt;
+						int cptHunt = Ress.Hunt + (Ress.Fish-1)*2; //Les bateaux de peche en trop seront remplacés par des champs
+						Ress.Fish = 1;
 						while (cptHunt) {
 							cptHunt--;
 							Ress.Harvest++;
@@ -246,7 +253,7 @@ int main(int argc, char* argv[])
 		if (Ress.Trees <= 0) {
 			EndMain = 0;
 		}
-		SDL_Delay(10);
+		SDL_Delay(1);
 		Evenement();
 		Afficher();
 	}

@@ -19,7 +19,7 @@
 #define H2K 1080
 #define LCASE 158
 #define HCASE 79
-#define TIMETURN 2000
+#define TIMETURN 1000
 
 extern SDL_Window* Screen;
 extern int EndMain;

@@ -120,7 +120,7 @@ void Afficher() {
     if (1) { //refaire
         //Render Tiles one by one
         //Tiles
-        SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png");
+        SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png"); //delete test
         //i et j sont inversés à l'affichage à cause de l'isometrie
         //reverse i and j for isometric
         for (i = 0;i < LMAP;i++) {
