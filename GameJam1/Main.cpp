@@ -1,10 +1,11 @@
 ﻿#define SDL_MAIN_HANDLED
 
 #include <signal.h>
-
+#include <SDL_image.h>
 #include "Main.h"
 #include "Affichage.h"
 #include "Evenements.h"
+#include "Pixel.h"
 
 //Globals
 SDL_Window* Screen = NULL;
@@ -26,7 +27,7 @@ static inline void MedievalEra();
 static inline void ContemporaryEra();
 
 static bool IsType(int i, int j, CaseType type);
-static bool IsRiverLocation(int i, int j);
+static bool IsRiverLocation(SDL_Surface* surf, int i, int j);
 static bool IsSeaLocation(int i, int j);
 static bool IsForestLocation(int i, int j);
 static bool IsNearHouse(int i, int j);
@@ -39,6 +40,7 @@ int main(int argc, char* argv[])
 	srand((int)time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
+	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
 	
 	for (i = 0;i < LMAP;i++) { //Init Grille //init map
 		for (j = 0;j < HMAP;j++) {
@@ -46,13 +48,14 @@ int main(int argc, char* argv[])
 				Grid[i][j].Object = MOUNTAIN;
 			else if (IsSeaLocation(i, j))
 				Grid[i][j].Object = SEA;
-			else if (IsRiverLocation(i, j))
+			else if (IsRiverLocation(HitboxRiverS, i, j))
 				Grid[i][j].Object = RIVER;
 			else if (IsForestLocation(i, j))
 				Grid[i][j].Object = FOREST;
 		}
 		Grid[i][j].State = 0;
 	}
+	SDL_FreeSurface(HitboxRiverS);
 	Grid[10][10].Object = HUT;
 	
 	Year = 0; //Game Starts here
@@ -112,9 +115,13 @@ static inline void RemoveRandomTrees() {
 	}
 }
 
-static bool IsRiverLocation(int i, int j) {
+static bool IsRiverLocation(SDL_Surface *surf, int i, int j) {
+	if(surf==NULL)
+		printf("AAA %s\n",SDL_GetError());
+	Uint8 r, g, b;
+	GetRGBPixel(surf, i, j, &r, &g, &b);
 	(void)j;
-	return 14 < i && i < 17;
+	return r==0 && g==0 && b==255;
 }
 
 static bool IsSeaLocation(int i, int j) {

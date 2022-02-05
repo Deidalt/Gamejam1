@@ -137,8 +137,14 @@ void Afficher() {
                 //SDL_RenderCopy(Renderer, TestT[Grid[j][i].Object], NULL, &posObject);
                 if (Grid[j][i].Object == MOUNTAIN)
                     SDL_SetTextureColorMod(CaseT, 152, 57, 0);
-                else if (Grid[j][i].Object ==RIVER)
+                else if (Grid[j][i].Object == RIVER) {
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
+                    QueryText(CaseT, &wText, &hText);
+
+                    SDL_Rect posRiver = { static_cast<int>((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posMap.x, static_cast<int>(hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posMap.y - hText, wText, hText };
+                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);
+
+                }
                 else if (Grid[j][i].Object == SEA)
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
                 else if (Grid[j][i].Object == FOREST) {
