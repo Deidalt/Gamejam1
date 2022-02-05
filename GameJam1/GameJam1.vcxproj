@@ -23,12 +23,14 @@
     <ClCompile Include="Evenements.cpp" />
     <ClCompile Include="Fonctions.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Pixel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Affichage.h" />
     <ClInclude Include="Evenements.h" />
     <ClInclude Include="Fonctions.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="Pixel.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

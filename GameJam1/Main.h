@@ -18,7 +18,7 @@
 #define H2K 1080
 #define LCASE 158
 #define HCASE 79
-#define TIMETURN 1000
+#define TIMETURN 1000 //2000
 
 extern SDL_Window* Screen;
 extern int EndMain;
@@ -29,17 +29,19 @@ enum Eras { TRIBAL, MEDIEVAL, CONTEMPORARY };
 extern Eras era;
 extern float Zoom;
 extern SDL_Point ScreenL;
+extern int Revenge;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
 
 struct Case {
-	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Boat
-	int State; //0= empty, 1=const 2=destru, (sert aussi à indiquer le nombre d'arbre détruit dans la case)
+	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Ship
+	int State; //0= Building, 1=Built, 2=Destroyed ; OR number of tree destroyed
 };
 extern Case Grid[LMAP][HMAP];
 
 struct Ressources {
 	int Food; //useless
+	int Treecut; //Faire tableau d'affichage pour connaitre les raisons de chaque arbre coupé
 	int Animals;
 	int Trees;
 	int Pop;
