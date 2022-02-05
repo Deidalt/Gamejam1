@@ -1,4 +1,4 @@
-#define SDL_MAIN_HANDLED
+ï»¿#define SDL_MAIN_HANDLED
 
 #include <signal.h>
 
@@ -206,7 +206,7 @@ void BuildMill() {
 }
 
 void BuildFields() {
-	int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
+	int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacÃ©s par des champs
 	Ress.Fish = 1;
 	while (cptHunt) {
 		cptHunt--;
@@ -354,7 +354,7 @@ void Cold() {
 void Meteor() {
 	Ress.Pop -= 10;
 	if (Ress.Pop < 0) {
-		// @TODO: Game over -- hunter compté comme population ?
+		// @TODO: Game over -- hunter comptÃ© comme population ?
 	}
 }
 
@@ -369,7 +369,7 @@ void Devour() {
 }
 
 void Drown() {
-	// @TODO: commencer à une case random pour être moins linéaire ?
+	// @TODO: commencer Ã  une case random pour Ãªtre moins linÃ©aire ?
 	for (int i = 0; i < LMAP; ++i) {
 		for (int j = 25; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
