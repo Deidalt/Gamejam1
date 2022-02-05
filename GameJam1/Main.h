@@ -28,6 +28,7 @@ extern SDL_Point LastMove;
 extern int Eras;
 extern float Zoom;
 extern SDL_Point ScreenL;
+extern int Revenge;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
 
@@ -39,6 +40,7 @@ extern Case Grid[LMAP][HMAP];
 
 struct Ressources {
 	int Food; //useless
+	int Treecut; //Faire tableau d'affichage pour connaitre les raisons de chaque arbre coupé
 	int Animals;
 	int Trees;
 	int Pop;

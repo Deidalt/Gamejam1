@@ -103,8 +103,8 @@ void Afficher() {
     }
     
     //Textures init
-    static SDL_Texture* MapA1T = IMG_LoadTexture(Renderer, "Assets/Map/Map_base_tempere1.png");
-    static SDL_Texture* MapA2T = IMG_LoadTexture(Renderer, "Assets/Map/Map_base_tempere2.png");
+    static SDL_Texture* MapA1T = IMG_LoadTexture(Renderer, "Assets/Map/RELIEF_tempere_1.png");
+    static SDL_Texture* MapA2T = IMG_LoadTexture(Renderer, "Assets/Map/RELIEF_tempere_2.png");
     static SDL_Texture* BackgroundT = IMG_LoadTexture(Renderer, "Assets/Map/Background_tempere.png");
     
 
@@ -130,7 +130,7 @@ void Afficher() {
         for (i = 0;i < LMAP;i++) {
             for (j = 0;j < HMAP;j++) {
                 QueryText(CaseT, &wText, &hText);
-                SDL_Point ObjectP = { i * wText / 2 ,j * hText  };
+                SDL_Point ObjectP = { i * wText/2  ,j * hText  };
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
                 SDL_Rect posObject = { ObjectIsoP.x - posMap.x,ObjectIsoP.y - posMap.y,wText,hText  };
                 //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };

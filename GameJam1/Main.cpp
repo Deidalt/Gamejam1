@@ -11,7 +11,7 @@ SDL_Window* Screen = NULL;
 SDL_Renderer *Renderer;
 int EndMain = 1;
 Case Grid[LMAP][HMAP];
-Ressources Ress = { 0,10,MAXTREES,0,0,0,0 };
+Ressources Ress = { 0 };
 int Year = -1;
 int timegame = 0;
 SDL_Point posMap = { 0,0 };
@@ -19,20 +19,21 @@ SDL_Point LastMove = { 0,0 }; //1=Droite , 2 =Gauche, 3=Bas, 4=Haut
 int Eras = 1; //1=tribal, 2=medieval, 3=contemporain
 float Zoom = 1; //same camera for all resolutions
 SDL_Point ScreenL = { 0,0 }; //my Reso
+int Revenge = 0;
 
 static inline void TribalEra();
+static inline void MedievalEra();
+static inline void ContemporaryEra();
 
 static bool IsType(int i, int j, CaseType type);
 static bool IsRiverLocation(int i, int j);
 static bool IsSeaLocation(int i, int j);
 static bool IsForestLocation(int i, int j);
-
 static bool IsNearHouse(int i, int j);
 
 int main(int argc, char* argv[])
 {
 	SDL_SetMainReady();
-
 	InitAffichage();
 
 	srand((int)time(NULL));
@@ -41,7 +42,7 @@ int main(int argc, char* argv[])
 	
 	for (i = 0;i < LMAP;i++) { //Init Grille //init map
 		for (j = 0;j < HMAP;j++) {
-			if (j < 2)
+			if (j < 3)
 				Grid[i][j].Object = MOUNTAIN;
 			else if (IsSeaLocation(i, j))
 				Grid[i][j].Object = SEA;
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
 	Ress.Harvest = 0;
 	Ress.Fish = 0;
 	Ress.Animals = 10;
+	Ress.Trees = MAXTREES;
 	while (EndMain) {
 		if (Year >= 0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec 
@@ -73,142 +75,10 @@ int main(int argc, char* argv[])
 					TribalEra();
 				}
 				else if (Eras == 2) {
-					//medieval
-					Ress.Pop+=2;
-					Ress.Trees-=5;
-					int found = 0;
-					int Treecut = 5;
-					int food = Ress.Pop; //total food to search per turn
-					food -= 5;
-					while (food > 0) {
-						if (Ress.Fish) {
-							//1 fisher
-							food -= 10;
-							
-						}
-						if (Ress.River > 0) {
-							//Harvest
-							int cptHarvest = Ress.Harvest;
-							while (cptHarvest) {
-								food -= 5;
-								cptHarvest--;
-							}
-						}
-						if (food >0 && Ress.Animals > 0) {
-							//Hunt
-							food -= 5;
-							Ress.Hunt++;
-							Ress.Animals--;
-						}
-						else while (food > 0) {
-							//build new temporary boat
-							food -= 10;
-							Ress.Fish++;
-							Treecut++;
-						}
-					} //end food
-					if (Grid[14][20].Object != MILL) {
-						//build Mill
-						Grid[14][20].Object = MILL;
-						Grid[14][20].State = 1;
-						Treecut++;
-					}
-					if (Ress.Fish == 0) {
-						//Build boat
-						Ress.Fish = 1;
-						Treecut += 1;
-					}
-					if (Ress.River) {
-						//build fields
-						int cptHunt = Ress.Hunt + (Ress.Fish-1)*2; //Les bateaux de peche en trop seront remplacés par des champs
-						Ress.Fish = 1;
-						while (cptHunt) {
-							cptHunt--;
-							Ress.Harvest++;
-							Treecut++;
-							for (i = 14;i > 0;i--) {
-								for (j = 20;j < 27;j++) {
-									if (Grid[i][j].Object == EMPTY_CASE) {
-										if (Grid[i+1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j-1].Object == FIELD || Grid[i][j+1].Object == FIELD) {
-											Grid[i][j].Object = FIELD;
-											Grid[i][j].State = 2;
-											i = 0;
-											j = 30;
-										}
-									}
-								}
-							}
-						}
-					}
-					if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
-						//Build House
-						Ress.Houses++;
-						Ress.Trees -= 5;
-						found = 0;
-						Treecut += 5;
-						while (!found) {
-							int Rcase = rand() % 900;
-							int CaseI = Rcase % 30;
-							int CaseJ = Rcase / 30;
-							if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
-								//check sides == house
-								if (IsNearHouse(CaseI, CaseJ)) {
-									found = 1;
-									Grid[CaseI][CaseJ].Object = HOUSE;
-								}
-							}
-						}
-					}
-					while (Treecut > 0 && Ress.Trees>0) {
-						int Rtree = rand() % 101; //destroy random tree
-						int TreeI = Rtree % 10; //10col for 10line
-						int TreeJ = Rtree / 10;
-						if (Grid[20 + TreeI][10 + TreeJ].State < 4) {
-							while (Treecut > 0 && Grid[20 + TreeI][10 + TreeJ].State < 4) {
-								Grid[20 + TreeI][10 + TreeJ].State++;
-								Treecut--;
-							}
-						}
-					}
-					if (Ress.Pop >= 100)
-						Eras++;
+					MedievalEra();
 				}
 				else if (Eras == 3) {
-					//Contemporary
-					Ress.Pop += 4;
-					Ress.Trees -= 10;
-					int found = 0;
-					int Treecut = 10;
-					if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
-						//Build Appart
-						Ress.Apparts++;
-						Ress.Trees -= 10;
-						Treecut += 10;
-						found = 0;
-						while (!found) {
-							int Rcase = rand() % 900;
-							int CaseI = Rcase % 30;
-							int CaseJ = Rcase / 30;
-							if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
-								//check near house
-								if (IsNearHouse(CaseI, CaseJ)) {
-									found = 1;
-									Grid[CaseI][CaseJ].Object = APPART;
-								}
-							}
-						}
-					}
-					while (Treecut > 0 && Ress.Trees>0) {
-						int Rtree = rand() % 101; //destroy random tree
-						int TreeI = Rtree % 10; //10col for 10line
-						int TreeJ = Rtree / 10;
-						if (Grid[20 + TreeI][10 + TreeJ].State < 4) {
-							while (Treecut > 0 && Grid[20 + TreeI][10 + TreeJ].State < 4) {
-								Grid[20 + TreeI][10 + TreeJ].State++;
-								Treecut--;
-							}
-						}
-					}
+					ContemporaryEra();
 				}
 			}
 			
@@ -225,29 +95,17 @@ int main(int argc, char* argv[])
 
 }
 
-static inline void HuntTribal() {
-	int food = Ress.Pop; //total food to search per turn
+static inline void RemoveRandomTrees() {
+	int nbTreeCut = Ress.Treecut;
+	while (nbTreeCut > 0 && Ress.Trees > 0) {
 
-	food -= 5;
-
-	while (food > 0 && Ress.Animals > 0) {
-		//Hunt
-		food -= 5;
-		Ress.Hunt++;
-		Ress.Animals--;
-	}
-}
-
-static inline void RemoveRandomTrees(int nbTreesCut) {
-	while (nbTreesCut > 0 && Ress.Trees > 0) {
-		int Rtree = rand() % 101; //destroy random tree
-		int i = Rtree % 10; //10col for 10line
-		int j = Rtree / 10;
-
+		int Rtree = rand() % (FOREST_H* FOREST_W+1); //destroy random tree
+		int i = Rtree % FOREST_H; //10col for 10line
+		int j = Rtree / FOREST_H;
 		if (Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
-			while (nbTreesCut > 0 && Grid[20 + i][10 + j].State < 4) {
+			while (nbTreeCut > 0 && Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
 				Grid[COL_FOREST + i][LINE_FOREST + j].State++;
-				--nbTreesCut;
+				--nbTreeCut;
 				--Ress.Trees; //trees consumed per turn
 			}
 		}
@@ -261,7 +119,7 @@ static bool IsRiverLocation(int i, int j) {
 
 static bool IsSeaLocation(int i, int j) {
 	(void)i;
-	return j > 27;
+	return j > 24;
 }
 
 static bool IsForestLocation(int i, int j) {
@@ -277,7 +135,7 @@ static bool IsType(int i, int j, CaseType type) {
 	return false;
 }
 
-static bool IsBuilding(int i, int j) {
+static bool IsHouse(int i, int j) {
 	if (0 <= i && i < LMAP && 0 <= j && j < HMAP) {
 		const CaseType caseType = Grid[i][j].Object;
 		return caseType == HUT || caseType == HOUSE || caseType == APPART;
@@ -287,7 +145,13 @@ static bool IsBuilding(int i, int j) {
 }
 
 static bool IsNearHouse(int i, int j) {
-	return IsBuilding(i + 1, j) || IsBuilding(i + 1, j + 1) || IsBuilding(i - 1, j) || IsBuilding(i - 1, j - 1);
+	return IsHouse(i + 1, j) || IsHouse(i + 1, j + 1) || IsHouse(i - 1, j) || IsHouse(i - 1, j - 1);
+}
+
+void Hunt() {
+	Ress.Food -= 5;
+	Ress.Hunt++;
+	Ress.Animals--;
 }
 
 static inline void BuildHut() {
@@ -311,13 +175,68 @@ static inline void BuildHut() {
 	}
 }
 
+void BuildHouse() {
+	Ress.Houses++;
+	Ress.Trees -= 5;
+	int found = 0;
+	Ress.Treecut += 5;
+	while (!found) {
+		int Rcase = rand() % 900;
+		int CaseI = Rcase % 30;
+		int CaseJ = Rcase / 30;
+		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
+			//check sides == house
+			if (IsNearHouse(CaseI, CaseJ)) {
+				found = 1;
+				Grid[CaseI][CaseJ].Object = HOUSE;
+			}
+		}
+	}
+}
+
+void BuildShip() {
+	Ress.Fish++;
+	Ress.Treecut++;
+}
+
+void BuildMill() {
+	Grid[14][20].Object = MILL;
+	Grid[14][20].State = 1;
+	Ress.Treecut++;
+}
+
+void BuildFields() {
+	int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
+	Ress.Fish = 1;
+	while (cptHunt) {
+		cptHunt--;
+		Ress.Harvest++;
+		Ress.Treecut++;
+		for (int i = 14;i > 0;i--) {
+			for (int j = 20;j < 27;j++) {
+				if (Grid[i][j].Object == EMPTY_CASE) {
+					if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
+						Grid[i][j].Object = FIELD;
+						Grid[i][j].State = 2;
+						i = 0;
+						j = 30;
+					}
+				}
+			}
+		}
+	}
+}
+
 static inline void TribalEra() {
 	Ress.Pop++;
 	
-	int found = 0;
-
-	HuntTribal();
-	RemoveRandomTrees(2);
+	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
+	Ress.Food -= 5; //gathering
+	while (Ress.Food > 0 && Ress.Animals > 0) {
+		Hunt();
+	}
+	Ress.Treecut = 2;
+	RemoveRandomTrees();
 
 	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
 		BuildHut();
@@ -327,10 +246,86 @@ static inline void TribalEra() {
 		Eras++;
 }
 
+void MedievalEra() {
+	Ress.Pop += 2;
+	int found = 0;
+	Ress.Treecut = 5;
+	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
+	Ress.Food -= 5;
+	if (Revenge) {
+		Revenge = 0;
+		Ress.Food -= 10;
+		Ress.Animals -= 3;
+		Ress.Hunt += 2;
+	}
+	while (Ress.Food > 0) {
+		if (Ress.Fish) {
+			//1 fisher
+			Ress.Food -= 10;
+
+		}
+		if (Ress.River > 0) {
+			//Harvest
+			Ress.Food -= Ress.Harvest * 5;
+		}
+		if (Ress.Food > 0 && Ress.Animals > 0) {
+			Hunt();
+		}
+		else while (Ress.Food > 0) {
+			//build new temporary boat
+			Ress.Food -= 10;
+			BuildShip();
+		}
+	} //end Ress.Food
+	if (Grid[14][20].Object != MILL) {
+		BuildMill();
+
+	}
+	if (Ress.Fish == 0) {
+		BuildShip();
+	}
+	if (Ress.River) {
+		BuildFields();
+	}
+	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
+		BuildHouse();
+	}
+	RemoveRandomTrees();
+
+	if (Ress.Pop >= 100)
+		Eras++;
+}
+
+void ContemporaryEra() {
+	Ress.Pop += 4;
+	int found = 0;
+	Ress.Treecut = 10;
+	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
+		//Build Appart
+		Ress.Apparts++;
+		Ress.Trees -= 10;
+		Ress.Treecut += 10;
+		found = 0;
+		while (!found) {
+			int Rcase = rand() % 900;
+			int CaseI = Rcase % 30;
+			int CaseJ = Rcase / 30;
+			if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
+				//check near house
+				if (IsNearHouse(CaseI, CaseJ)) {
+					found = 1;
+					Grid[CaseI][CaseJ].Object = APPART;
+				}
+			}
+		}
+	}
+	RemoveRandomTrees();
+}
+
 void Plant(int nbTreesAdded) {
 	int Rtree = rand() % 101; //destroy random tree
-	int i = Rtree % 10; //10col for 10line
-	int j = Rtree / 10;
+	int i = Rtree % FOREST_H; //10col for 10line
+	int j = Rtree / FOREST_H;
 	int count = 0; // Avoid looping endlessly if the forest cannot take any more trees
 
 	for (; count < FOREST_W * FOREST_H && nbTreesAdded > 0 && Ress.Trees > 0; j = (j + 1) % FOREST_H, ++count) {
@@ -366,20 +361,20 @@ void Meteor() {
 void Devour() {
 	if (Ress.Animals > 0 && Ress.Hunt > 0) {
 		--Ress.Hunt;
+		if (Eras == 2) {
+			//Revenge //battue au prochain tour
+			Revenge = 1;
+		}
 	}
 }
 
 void Drown() {
 	// @TODO: commencer à une case random pour être moins linéaire ?
 	for (int i = 0; i < LMAP; ++i) {
-		for (int j = 0; j < HMAP; ++j) {
+		for (int j = 25; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
-				if (IsRiverLocation(i, j)) {
-					Grid[i][j].Object = RIVER;
-				}
-				else {
-					Grid[i][j].Object = SEA;
-				}
+				Grid[i][j].Object = SEA;
+				
 
 				return;
 			}
