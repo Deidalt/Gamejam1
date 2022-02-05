@@ -117,7 +117,7 @@ static inline void RemoveRandomTrees() {
 
 static bool IsRiverLocation(SDL_Surface *surf, int i, int j) {
 	if(surf==NULL)
-		printf("AAA %s\n",SDL_GetError());
+		printf("isRiver error : %s\n",SDL_GetError());
 	Uint8 r, g, b;
 	GetRGBPixel(surf, i, j, &r, &g, &b);
 	(void)j;
@@ -189,8 +189,8 @@ void BuildHouse() {
 	Ress.Treecut += 5;
 	while (!found) {
 		int Rcase = rand() % 900;
-		int CaseI = Rcase % 30;
-		int CaseJ = Rcase / 30;
+		int CaseI = Rcase % LMAP;
+		int CaseJ = Rcase / LMAP;
 		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
 			//check sides == house
 			if (IsNearHouse(CaseI, CaseJ)) {
@@ -204,11 +204,21 @@ void BuildHouse() {
 void BuildShip() {
 	Ress.Fish++;
 	Ress.Treecut++;
+	int Built = 0;
+	while (!Built) {
+		int Rcase = rand() % ((LMAP - 2) * 2) + 1; //cases au centre de la mer
+		int CaseI = Rcase / (LMAP - 2);
+		int CaseJ = Rcase % (LMAP - 2);
+		printf("AAA %d %d %d\n", Rcase,CaseI, CaseJ);
+		if (Grid[25+CaseI][1+CaseJ].Object == SEA) {
+			Built = 1;
+			Grid[25+CaseI][1+CaseJ].Object = SHIP;
+		}
+	}
 }
 
 void BuildMill() {
-	Grid[14][20].Object = MILL;
-	Grid[14][20].State = 1;
+	Grid[14][20].Object = MILL; 
 	Ress.Treecut++;
 }
 
@@ -224,7 +234,6 @@ void BuildFields() {
 				if (Grid[i][j].Object == EMPTY_CASE) {
 					if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
 						Grid[i][j].Object = FIELD;
-						Grid[i][j].State = 2;
 						i = 0;
 						j = 30;
 					}
@@ -279,7 +288,7 @@ void MedievalEra() {
 			Hunt();
 		}
 		else while (Ress.Food > 0) {
-			//build new temporary boat
+			//build new temporary Ship
 			Ress.Food -= 10;
 			BuildShip();
 		}

@@ -57,7 +57,6 @@ void Afficher() {
     char buff1[100]; //
     float Zoom4K = ((float)ScreenL.y) / H4K;
 
-    static SDL_Texture* TestT[6];
     static TTF_Font* ArialNarrowB40 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 40);
     static SDL_Texture* TreeAT[4];
     static SDL_Texture* TreeBT[4];
@@ -65,29 +64,6 @@ void Afficher() {
 
     if (Initialised == 0){
         //Vars init
-        SDL_Surface* TestS[8];
-        for (int m = 0;m < 8;m++) {
-            TestS[m] = SDL_CreateRGBSurface(0, LCASE, LCASE, 32, 0, 0, 0, 0);
-            if(m==0)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 38, 230, 0));
-            else if (m == 1)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 128, 42, 0));
-            else if (m == 2)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 0, 80, 255));
-            else if (m == 3)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 0, 10, 200));
-            else if (m == 4)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 0, 77, 0));
-            else if (m == 5)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 255, 255, 0));
-            else if (m == 6)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 255, 225, 0));
-            else if (m == 7)
-                SDL_FillRect(TestS[m], NULL, SDL_MapRGB(TestS[m]->format, 255, 185, 0));
-            TestT[m] = SDL_CreateTextureFromSurface(Renderer, TestS[m]);
-            SDL_FreeSurface(TestS[m]);
-        }
-        //CaseT = IMG_LoadTexture(Renderer,"Images/Case.png");
         Initialised = 2;
         for (i = 0;i < 4;i++) {
             #pragma warning(suppress : 4996)
@@ -134,7 +110,6 @@ void Afficher() {
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
                 SDL_Rect posObject = { ObjectIsoP.x - posMap.x,ObjectIsoP.y - posMap.y,wText,hText  };
                 //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };
-                //SDL_RenderCopy(Renderer, TestT[Grid[j][i].Object], NULL, &posObject);
                 if (Grid[j][i].Object == MOUNTAIN)
                     SDL_SetTextureColorMod(CaseT, 152, 57, 0);
                 else if (Grid[j][i].Object == RIVER) {
@@ -182,24 +157,26 @@ void Afficher() {
                             posTreeA.x -= static_cast<int>(215 * Zoom);
                             posTreeA.y -= static_cast<int>(167 * Zoom);
                         }
-                        //printf("dda %d %d %d %d\n", posTreeA.x, posTreeA.y, posTreeA.w, posTreeA.h);
                         SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
                     }
                 }
-                else if (Grid[j][i].Object == 5)
-                    SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                 else if (Grid[j][i].Object == HUT)
-                    SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                    SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                 else if (Grid[j][i].Object == HOUSE)
+                    SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                else if (Grid[j][i].Object == APPART)
                     SDL_SetTextureColorMod(CaseT, 102, 0, 102);
-                else if (Grid[j][i].Object == APPART) {
-                    if(Grid[j][i].State==1)
-                    SDL_SetTextureColorMod(CaseT, 230, 153, 0);
-                    if(Grid[j][i].State==2)
-                    SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                else if (Grid[j][i].Object == FIELD) {
+                    if (i == 14 && j == 20)
+                        SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                    else
+                        SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                }
+                else if (Grid[j][i].Object == SHIP) {
+                    SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                 }
                 else
-                    SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                    SDL_SetTextureColorMod(CaseT, 100, 200, 100);
                 SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
                 
             }
