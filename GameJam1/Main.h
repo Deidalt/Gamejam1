@@ -25,7 +25,8 @@ extern int EndMain;
 extern SDL_Renderer *Renderer;
 extern SDL_Point posMap;
 extern SDL_Point LastMove;
-extern int Eras;
+enum Eras { TRIBAL, MEDIEVAL, CONTEMPORARY };
+extern Eras era;
 extern float Zoom;
 extern SDL_Point ScreenL;
 
@@ -56,5 +57,11 @@ extern Ressources Ress;
 #define LINE_FOREST 10
 #define FOREST_W 10
 #define FOREST_H 10
+
+enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NB_ACTIONS };
+extern Actions lastAction;
+
+void SetAsAction(Actions action);
+Actions getCurrentAction();
 
 #endif

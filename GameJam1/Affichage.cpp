@@ -48,6 +48,14 @@ void InitAffichage() {
     printf("Zoom %.2f\n", Zoom);
 }
 
+static inline const char* const ActionName() {
+    static const char* names[NB_ACTIONS] = {
+        "Plant", "Rain", "Cold", "Meteor", "Devour", "Drown"
+    };
+
+    return names[getCurrentAction()];
+}
+
 void Afficher() {
     SDL_SetRenderDrawColor(Renderer, 16, 8, 21, 255);
     SDL_RenderClear(Renderer);
@@ -203,7 +211,7 @@ void Afficher() {
 
     //HUD HAUT
     #pragma warning(suppress : 4996)
-    sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d",Ress.Pop,Ress.Trees,Ress.Animals);
+    sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d ;; Action=%s",Ress.Pop,Ress.Trees,Ress.Animals, ActionName());
     SDL_Point posRess = { static_cast<int>(1000 * Zoom), static_cast<int>(50 * Zoom) };
     TTFrender(buff1, ArialNarrowB40, { 255, 255, 255 }, posRess);
     #pragma warning(suppress : 4996)

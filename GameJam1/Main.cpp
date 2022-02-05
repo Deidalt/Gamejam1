@@ -16,9 +16,10 @@ int Year = -1;
 int timegame = 0;
 SDL_Point posMap = { 0,0 };
 SDL_Point LastMove = { 0,0 }; //1=Droite , 2 =Gauche, 3=Bas, 4=Haut
-int Eras = 1; //1=tribal, 2=medieval, 3=contemporain
+Eras era = TRIBAL; //1=tribal, 2=medieval, 3=contemporain
 float Zoom = 1; //same camera for all resolutions
 SDL_Point ScreenL = { 0,0 }; //my Reso
+Actions lastAction;
 
 static inline void TribalEra();
 
@@ -29,6 +30,13 @@ static bool IsForestLocation(int i, int j);
 
 static bool IsNearHouse(int i, int j);
 
+void Plant();
+void Rain();
+void Cold();
+void Meteor();
+void Devour();
+void Drown();
+
 int main(int argc, char* argv[])
 {
 	SDL_SetMainReady();
@@ -38,6 +46,9 @@ int main(int argc, char* argv[])
 	srand((int)time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
+
+	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown };
+	lastAction = PLANT;
 	
 	for (i = 0;i < LMAP;i++) { //Init Grille //init map
 		for (j = 0;j < HMAP;j++) {
@@ -62,17 +73,22 @@ int main(int argc, char* argv[])
 	Ress.Animals = 10;
 	while (EndMain) {
 		if (Year >= 0) {
-			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec 
+			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
+
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
 				if(Ress.Animals)
 					Ress.Animals++;
 				Ress.Hunt = 0;
+				
+				// Repeat last action each turn
+				actions[lastAction]();
+				
 				//Human turn
-				if (Eras == 1) {
+				if (era == TRIBAL) {
 					TribalEra();
 				}
-				else if (Eras == 2) {
+				else if (era == MEDIEVAL) {
 					//medieval
 					Ress.Pop+=2;
 					Ress.Trees-=5;
@@ -171,9 +187,9 @@ int main(int argc, char* argv[])
 						}
 					}
 					if (Ress.Pop >= 100)
-						Eras++;
+						era = CONTEMPORARY;
 				}
-				else if (Eras == 3) {
+				else if (era == CONTEMPORARY) {
 					//Contemporary
 					Ress.Pop += 4;
 					Ress.Trees -= 10;
@@ -324,10 +340,11 @@ static inline void TribalEra() {
 	}
 
 	if (Ress.Pop >= 20)
-		Eras++;
+		era = MEDIEVAL;
 }
 
-void Plant(int nbTreesAdded) {
+void Plant() {
+	int nbTreesAdded = 1;
 	int Rtree = rand() % 101; //destroy random tree
 	int i = Rtree % 10; //10col for 10line
 	int j = Rtree / 10;
@@ -385,4 +402,16 @@ void Drown() {
 			}
 		}
 	}
+}
+
+void SetAsAction(Actions action) {
+	if (action == METEOR && era == TRIBAL) {
+		return;
+	}
+
+	lastAction = action;
+}
+
+Actions getCurrentAction() {
+	return lastAction;
 }
