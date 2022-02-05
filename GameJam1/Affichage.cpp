@@ -103,8 +103,8 @@ void Afficher() {
     }
     
     //Textures init
-    static SDL_Texture* MapA1T = IMG_LoadTexture(Renderer, "Assets/Map/Map_base_tempere1.png");
-    static SDL_Texture* MapA2T = IMG_LoadTexture(Renderer, "Assets/Map/Map_base_tempere2.png");
+    static SDL_Texture* MapA1T = IMG_LoadTexture(Renderer, "Assets/Map/Relief_tempere_1.png");
+    static SDL_Texture* MapA2T = IMG_LoadTexture(Renderer, "Assets/Map/Relief_tempere_2.png");
     static SDL_Texture* BackgroundT = IMG_LoadTexture(Renderer, "Assets/Map/Background_tempere.png");
     
 
