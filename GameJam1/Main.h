@@ -12,12 +12,11 @@
 #define LMAP 30
 #define HMAP 30
 #define MAXTREES 400
-#define LCASE 50
 #define W4K 3840
 #define H4K 2160
 #define W2K 1920
 #define H2K 1080
-#define LCASE 158 // @TODO: choisir l'un des 2 LCASE
+#define LCASE 158
 #define HCASE 79
 #define TIMETURN 1000
 
@@ -30,7 +29,7 @@ extern int Eras;
 extern float Zoom;
 extern SDL_Point ScreenL;
 
-typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, SHIP } CaseType;
+typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
 
 struct Case {
 	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Boat

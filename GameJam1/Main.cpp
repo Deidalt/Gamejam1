@@ -22,11 +22,12 @@ SDL_Point ScreenL = { 0,0 }; //my Reso
 
 static inline void TribalEra();
 
-static inline bool IsRiver(int i, int j);
+static bool IsType(int i, int j, CaseType type);
+static bool IsRiverLocation(int i, int j);
+static bool IsSeaLocation(int i, int j);
+static bool IsForestLocation(int i, int j);
 
-static inline bool IsSea(int i, int j);
-
-static inline bool IsForest(int i, int j);
+static bool IsNearHouse(int i, int j);
 
 int main(int argc, char* argv[])
 {
@@ -34,7 +35,7 @@ int main(int argc, char* argv[])
 
 	InitAffichage();
 
-	srand(time(NULL));
+	srand((int)time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
 	
@@ -42,11 +43,11 @@ int main(int argc, char* argv[])
 		for (j = 0;j < HMAP;j++) {
 			if (j < 2)
 				Grid[i][j].Object = MOUNTAIN;
-			else if (IsSea(i, j))
+			else if (IsSeaLocation(i, j))
 				Grid[i][j].Object = SEA;
-			else if (IsRiver(i, j))
+			else if (IsRiverLocation(i, j))
 				Grid[i][j].Object = RIVER;
-			else if (IsForest(i, j))
+			else if (IsForestLocation(i, j))
 				Grid[i][j].Object = FOREST;
 		}
 		Grid[i][j].State = 0;
@@ -106,9 +107,9 @@ int main(int argc, char* argv[])
 							Treecut++;
 						}
 					} //end food
-					if (Grid[14][20].Object != 8) {
+					if (Grid[14][20].Object != MILL) {
 						//build Mill
-						Grid[14][20].Object = 8;
+						Grid[14][20].Object = MILL;
 						Grid[14][20].State = 1;
 						Treecut++;
 					}
@@ -127,9 +128,9 @@ int main(int argc, char* argv[])
 							Treecut++;
 							for (i = 14;i > 0;i--) {
 								for (j = 20;j < 27;j++) {
-									if (Grid[i][j].Object == 0) {
-										if (Grid[i+1][j].Object == 8 || Grid[i - 1][j].Object == 8 || Grid[i][j-1].Object == 8 || Grid[i][j+1].Object == 8) {
-											Grid[i][j].Object = 8;
+									if (Grid[i][j].Object == EMPTY_CASE) {
+										if (Grid[i+1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j-1].Object == FIELD || Grid[i][j+1].Object == FIELD) {
+											Grid[i][j].Object = FIELD;
 											Grid[i][j].State = 2;
 											i = 0;
 											j = 30;
@@ -149,10 +150,9 @@ int main(int argc, char* argv[])
 							int Rcase = rand() % 900;
 							int CaseI = Rcase % 30;
 							int CaseJ = Rcase / 30;
-							if (Grid[CaseI][CaseJ].Object == 0) {
+							if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
 								//check sides == house
-								if ((Grid[CaseI + 1][CaseJ].Object >= 5 && Grid[CaseI + 1][CaseJ].Object <= 7) || (Grid[CaseI + 1][CaseJ + 1].Object >= 5 && Grid[CaseI + 1][CaseJ + 1].Object <= 7) ||
-									(Grid[CaseI - 1][CaseJ].Object >= 5 && Grid[CaseI - 1][CaseJ].Object <= 7) || (Grid[CaseI - 1][CaseJ - 1].Object >= 5 && Grid[CaseI - 1][CaseJ - 1].Object <= 7)) {
+								if (IsNearHouse(CaseI, CaseJ)) {
 									found = 1;
 									Grid[CaseI][CaseJ].Object = HOUSE;
 								}
@@ -189,10 +189,9 @@ int main(int argc, char* argv[])
 							int Rcase = rand() % 900;
 							int CaseI = Rcase % 30;
 							int CaseJ = Rcase / 30;
-							if (Grid[CaseI][CaseJ].Object == 0) {
+							if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
 								//check near house
-								if ((Grid[CaseI + 1][CaseJ].Object >= 5 && Grid[CaseI + 1][CaseJ].Object <= 7) || (Grid[CaseI + 1][CaseJ + 1].Object >= 5 && Grid[CaseI + 1][CaseJ + 1].Object <= 7) ||
-									(Grid[CaseI - 1][CaseJ].Object >= 5 && Grid[CaseI - 1][CaseJ].Object <= 7) || (Grid[CaseI - 1][CaseJ - 1].Object >= 5 && Grid[CaseI - 1][CaseJ - 1].Object <= 7)) {
+								if (IsNearHouse(CaseI, CaseJ)) {
 									found = 1;
 									Grid[CaseI][CaseJ].Object = APPART;
 								}
@@ -226,20 +225,6 @@ int main(int argc, char* argv[])
 
 }
 
-static bool IsRiver(int i, int j) {
-	(void)j;
-	return 14 < i && i < 17;
-}
-
-static bool IsSea(int i, int j) {
-	(void)i;
-	return j > 27;
-}
-
-static bool IsForest(int i, int j) {
-	return i >= 20 && i < 30 && j >= 10 && j < 20;
-}
-
 static inline void HuntTribal() {
 	int food = Ress.Pop; //total food to search per turn
 
@@ -269,8 +254,40 @@ static inline void RemoveRandomTrees(int nbTreesCut) {
 	}
 }
 
-static bool IsBuilding(CaseType caseType) {
-	return caseType == HUT || caseType == HOUSE || caseType == APPART;
+static bool IsRiverLocation(int i, int j) {
+	(void)j;
+	return 14 < i && i < 17;
+}
+
+static bool IsSeaLocation(int i, int j) {
+	(void)i;
+	return j > 27;
+}
+
+static bool IsForestLocation(int i, int j) {
+	return i >= 20 && i < 30 && j >= 10 && j < 20;
+}
+
+static bool IsType(int i, int j, CaseType type) {
+	if (0 <= i && i < LMAP && 0 <= j && j < HMAP) {
+		const CaseType caseType = Grid[i][j].Object;
+		return caseType == type;
+	}
+
+	return false;
+}
+
+static bool IsBuilding(int i, int j) {
+	if (0 <= i && i < LMAP && 0 <= j && j < HMAP) {
+		const CaseType caseType = Grid[i][j].Object;
+		return caseType == HUT || caseType == HOUSE || caseType == APPART;
+	}
+
+	return false;
+}
+
+static bool IsNearHouse(int i, int j) {
+	return IsBuilding(i + 1, j) || IsBuilding(i + 1, j + 1) || IsBuilding(i - 1, j) || IsBuilding(i - 1, j - 1);
 }
 
 static inline void BuildHut() {
@@ -283,10 +300,9 @@ static inline void BuildHut() {
 		int i = Rcase % 30;
 		int j = Rcase / 30;
 
-		if (Grid[i][j].Object == 0) {
+		if (Grid[i][j].Object == EMPTY_CASE) {
 			//check near house
-			if (IsBuilding(Grid[i + 1][j].Object) || IsBuilding(Grid[i + 1][j + 1].Object) ||
-				IsBuilding(Grid[i - 1][j].Object) || IsBuilding(Grid[i - 1][j - 1].Object)) {
+			if (IsNearHouse(i, j)) {
 				
 				found = true;
 				Grid[i][j].Object = HUT;
@@ -319,7 +335,7 @@ void Plant(int nbTreesAdded) {
 
 	for (; count < FOREST_W * FOREST_H && nbTreesAdded > 0 && Ress.Trees > 0; j = (j + 1) % FOREST_H, ++count) {
 		if (Grid[COL_FOREST + i][LINE_FOREST + j].State > 0) {
-			while (nbTreesAdded > 0 && Grid[20 + i][10 + j].State > 0) {
+			while (nbTreesAdded > 0 && Grid[COL_FOREST + i][LINE_FOREST + j].State > 0) {
 				Grid[COL_FOREST + i][LINE_FOREST + j].State--;
 				--nbTreesAdded;
 				++Ress.Trees;
@@ -358,7 +374,7 @@ void Drown() {
 	for (int i = 0; i < LMAP; ++i) {
 		for (int j = 0; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
-				if (IsRiver(i, j)) {
+				if (IsRiverLocation(i, j)) {
 					Grid[i][j].Object = RIVER;
 				}
 				else {

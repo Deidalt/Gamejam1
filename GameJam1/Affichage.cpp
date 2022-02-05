@@ -151,7 +151,7 @@ void Afficher() {
                         int randTree = 0; //rand à faire
                         //int randTree = j % 3;
                         QueryText(TreeAT[randTree], &wText, &hText);
-                        SDL_Rect posTreeA = { static_cast<int>((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posMap.x ,hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom - posMap.y - hText,wText,hText };
+                        SDL_Rect posTreeA = { static_cast<int>((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posMap.x, static_cast<int>(hText2 / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posMap.y - hText, wText, hText };
                         if (arb == 0)
                             posTreeA.x += static_cast<int>(75 * Zoom);
                         else if (arb == 1)
@@ -212,7 +212,6 @@ void Afficher() {
     TTFrender(buff1, ArialNarrowB40, { 255, 150, 150 }, posRess);
     #pragma warning(suppress : 4996)
     sprintf(buff1, "Gathering +5");
-    printf("%d :: buff1 = %s\n", __LINE__, buff1); fflush(stdout);
     posRess.y += static_cast<int>(70 * Zoom);
     TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     if (Ress.Hunt) {
@@ -223,12 +222,12 @@ void Afficher() {
     }
     if (Ress.Fish) {
         sprintf(buff1, "Fish +%d", Ress.Fish * 10);
-        posRess.y += 70 * Zoom;
+        posRess.y += static_cast<int>(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
     if (Ress.Harvest) {
         sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
-        posRess.y += 70 * Zoom;
+        posRess.y += static_cast<int>(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
 
