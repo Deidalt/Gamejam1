@@ -124,7 +124,7 @@ void Afficher() {
     if (1) { //refaire
         //Render Tiles one by one
         //Tiles
-        SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png");
+        SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png"); //delete test
         //i et j sont inversés à l'affichage à cause de l'isometrie
         //reverse i and j for isometric
         for (i = 0;i < LMAP;i++) {
@@ -180,10 +180,18 @@ void Afficher() {
                         SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
                     }
                 }
+                else if (Grid[j][i].Object == 5)
+                    SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                 else if (Grid[j][i].Object == HUT)
-                    SDL_SetTextureColorMod(CaseT, 0, 255, 0);
+                    SDL_SetTextureColorMod(CaseT, 204, 0, 204);
                 else if (Grid[j][i].Object == HOUSE)
-                    SDL_SetTextureColorMod(CaseT, 255, 0, 0);
+                    SDL_SetTextureColorMod(CaseT, 102, 0, 102);
+                else if (Grid[j][i].Object == APPART) {
+                    if(Grid[j][i].State==1)
+                    SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                    if(Grid[j][i].State==2)
+                    SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                }
                 else
                     SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                 SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
@@ -212,6 +220,16 @@ void Afficher() {
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
         posRess.y += static_cast<int>(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
+    }
+    if (Ress.Fish) {
+        sprintf(buff1, "Fish +%d", Ress.Fish * 10);
+        posRess.y += 70 * Zoom;
+        TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+    }
+    if (Ress.Harvest) {
+        sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
+        posRess.y += 70 * Zoom;
+        TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
 
     SDL_RenderPresent(Renderer);
