@@ -238,7 +238,7 @@ void OmbrePortee(SDL_Surface* surface, int x, int y) //changer la couleur d'un p
     varg = g;
     varb = b;
     vara = a;
-    int i, j, k, l;
+    int i, j;
     int cptmoy = 4; //diviseur  (Monter le chiffre pour éclaircir l'ombre)
     int sommepx = 0; //somme des alpha des 25 pixel divisé par cptmoy
     //moyenne des 9 cases
@@ -395,7 +395,6 @@ void Flou1(SDL_Surface* surface, int x, int y) //petit antialiasing
 
     Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * nbOctetsParPixel;
     Uint8 r, g, b, a;
-    Uint8 rb, gb, bb, ab; //rgba des pixels autour
     int varr, varg, varb, vara; //obligatoire car les chiffres de uint8 ne vont que de 0 à 255
 
     SDL_GetRGBA(GetPixel(surface, x, y), surface->format, &r, &g, &b, &a);
@@ -404,7 +403,7 @@ void Flou1(SDL_Surface* surface, int x, int y) //petit antialiasing
     varg = g*10;
     varb = b*10;
     vara = a*10;
-    int i, j, k, l;
+    int i, j;
     int cptmoy = 10; //diviseur  (Monter le chiffre pour éclaircir l'ombre)
     int sommepx = 0; //somme des alpha des 25 pixel divisé par cptmoy
     //moyenne des 9 cases
@@ -515,7 +514,7 @@ int ChangeColorpx(SDL_Surface* surface, int debut, int fin, int perso) {
                     b = b;
                 }
                 else if (perso == 2) {  //orange
-                    g = (g * 1.8);
+                    g = static_cast<Uint8>(g * 1.8);
                     Uint8 vartmp = r;
                     r = (b * 2);
                     b = vartmp;
@@ -523,17 +522,17 @@ int ChangeColorpx(SDL_Surface* surface, int debut, int fin, int perso) {
                 else if (perso == 4) {  //Violet
                     Uint8 vartmp = g;
                     g = r;
-                    r = vartmp*1.2;
+                    r = static_cast<Uint8>(vartmp * 1.2);
                     b = b;
                 }
                 else if (perso == 3) {  //Rose
                     g = r;
-                    r = (b * 1.5);
+                    r = static_cast<Uint8>(b * 1.5);
                     b = r;
                 }
                 else if (perso == 5) {  //Rouge
                     g = r;
-                    r = (b * 2);
+                    r = static_cast<Uint8>(b * 2);
                     b = g;
                 }
                 else if (perso == 8) {  //Vert
@@ -542,7 +541,7 @@ int ChangeColorpx(SDL_Surface* surface, int debut, int fin, int perso) {
                     b = b;
                 }
                 else if (perso == 9) { //gris
-                    g = (g + r + b) / 3*1.5;
+                    g = static_cast<Uint8>((g + r + b) / 3 * 1.5);
                     r = g;
                     b = g;
                 }
@@ -615,7 +614,7 @@ void MySetPixel2(SDL_Texture* texture,int x,int y) {
         // If the locking fails, you might want to handle it somehow. SDL_GetError(); or something here.
     }
 
-    SDL_PixelFormat pixelFormat;
+    SDL_PixelFormat pixelFormat = {};
     pixelFormat.format = format;
     // Now you want to format the color to a correct format that SDL can use.
     // Basically we convert our RGB color to a hex-like BGR color.
@@ -642,7 +641,7 @@ void setPixelVerif(int x, int y, Uint8 r,Uint8 g,Uint8 b)
 SDL_Surface* uint8ToSurface(Uint8* image, int largeur, int hauteur) {
     SDL_Surface* surface;
     Uint32 rmask, gmask, bmask, amask;
-    SDL_Rect pixel;
+    SDL_Rect pixel = {};
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
@@ -682,7 +681,7 @@ SDL_Surface* VerticalMirror(SDL_Surface* image)
     SDL_Surface* surface = NULL;
     Uint8 r, g, b, a;
     int i = 0, j = 0;
-    SDL_Rect line1, line2 ;
+    SDL_Rect line1 = {}, line2 = {};
     line1.y = 0 ;
     line1.w = 1 ;
     line2.y = 0 ;

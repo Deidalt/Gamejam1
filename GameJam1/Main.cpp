@@ -20,8 +20,8 @@ SDL_Point LastMove = { 0,0 }; //1=Droite , 2 =Gauche, 3=Bas, 4=Haut
 Eras era = TRIBAL; //1=tribal, 2=medieval, 3=contemporain
 float Zoom = 1; //same camera for all resolutions
 SDL_Point ScreenL = { 0,0 }; //my Reso
-int Revenge = 0;
 Actions lastAction;
+int Revenge = 0;
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -48,12 +48,10 @@ int main(int argc, char* argv[])
 	srand((int)time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
-	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
-	
-
 	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown };
 	lastAction = PLANT;
-	
+	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
+
 	for (i = 0;i < LMAP;i++) { //Init Grille //init map
 		for (j = 0;j < HMAP;j++) {
 			if (j < 3)
@@ -276,7 +274,7 @@ static inline void TribalEra() {
 	}
 
 	if (Ress.Pop >= 20)
-		Eras++;
+		era = MEDIEVAL;
 }
 
 void MedievalEra() {
@@ -326,7 +324,7 @@ void MedievalEra() {
 	RemoveRandomTrees();
 
 	if (Ress.Pop >= 100)
-		era = MEDIEVAL;
+		era = CONTEMPORARY;
 }
 
 void ContemporaryEra() {
@@ -395,7 +393,7 @@ void Meteor() {
 void Devour() {
 	if (Ress.Animals > 0 && Ress.Hunt > 0) {
 		--Ress.Hunt;
-		if (Eras == 2) {
+		if (era == MEDIEVAL) {
 			//Revenge //battue au prochain tour
 			Revenge = 1;
 		}

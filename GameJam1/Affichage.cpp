@@ -66,9 +66,9 @@ void Afficher() {
     float Zoom4K = ((float)ScreenL.y) / H4K;
 
     static TTF_Font* ArialNarrowB40 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 40);
-    static SDL_Texture* TreeAT[4];
-    static SDL_Texture* TreeBT[4];
-    static SDL_Texture* TreeCT[4];
+    static SDL_Texture* TreeAT[4] = {};
+    static SDL_Texture* TreeBT[4] = {};
+    static SDL_Texture* TreeCT[4] = {};
 
     if (Initialised == 0){
         //Vars init
