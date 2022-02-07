@@ -60,6 +60,8 @@ extern Ressources Ress;
 #define FOREST_W 10
 #define FOREST_H 10
 
+#define YEARS_PER_SEASON 83
+
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NB_ACTIONS };
 extern Actions lastAction;
 

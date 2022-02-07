@@ -740,10 +740,3 @@ SDL_Surface* VerticalMirror(SDL_Surface* image)
     
     return surface;
 }
-
-
-
-
-
-
-

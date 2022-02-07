@@ -22,6 +22,7 @@ float Zoom = 1; //same camera for all resolutions
 SDL_Point ScreenL = { 0,0 }; //my Reso
 Actions lastAction;
 int Revenge = 0;
+int triggerCold = 0;
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -39,6 +40,10 @@ void Cold();
 void Meteor();
 void Devour();
 void Drown();
+
+static inline bool IsGlacialEpoch();
+static inline bool IsDryEpoch();
+static inline int GetColdResistance();
 
 int main(int argc, char* argv[])
 {
@@ -75,6 +80,7 @@ int main(int argc, char* argv[])
 	Ress.Fish = 0;
 	Ress.Animals = 10;
 	Ress.Trees = MAXTREES;
+	triggerCold = 0;
 	while (EndMain) {
 		if (Year >= 0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
@@ -87,6 +93,20 @@ int main(int argc, char* argv[])
 				
 				// Repeat last action each turn
 				actions[lastAction]();
+				if (triggerCold > 0) {
+					if (IsGlacialEpoch()) {
+						if (triggerCold >= GetColdResistance()) { // Note : pas de game over possible par le froid
+							int dead = (int)(0.05 * Ress.Pop);
+							Ress.Pop -= dead;
+						}
+						else {
+							++triggerCold;
+						}
+					}
+					else {
+						triggerCold = 0; // Only active during the glacial epoch
+					}
+				}
 				
 				//Human turn
 				if (era == TRIBAL) {
@@ -111,6 +131,16 @@ int main(int argc, char* argv[])
 	}
 	return EXIT_SUCCESS;
 
+}
+
+static inline int GetColdResistance() {
+	if (era == TRIBAL) {
+		return 5;
+	}
+	else {
+		return 10;
+		// @TODO: gérer hopital
+	}
 }
 
 static inline void RemoveRandomTrees() {
@@ -174,6 +204,14 @@ void Hunt() {
 	Ress.Food -= 5;
 	Ress.Hunt++;
 	Ress.Animals--;
+}
+
+static inline bool IsGlacialEpoch() {
+	return Year / YEARS_PER_SEASON == 1;
+}
+
+static inline bool IsDryEpoch() {
+	return Year / YEARS_PER_SEASON == 3;
 }
 
 static inline void BuildHut() {
@@ -380,7 +418,9 @@ void Rain() {
 }
 
 void Cold() {
-	// @TODO
+	if (IsGlacialEpoch()) {
+		triggerCold = 1;
+	}
 }
 
 void Meteor() {
@@ -393,6 +433,7 @@ void Meteor() {
 void Devour() {
 	if (Ress.Animals > 0 && Ress.Hunt > 0) {
 		--Ress.Hunt;
+		--Ress.Pop;
 		if (era == MEDIEVAL) {
 			//Revenge //battue au prochain tour
 			Revenge = 1;
