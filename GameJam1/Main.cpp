@@ -23,6 +23,8 @@ SDL_Point ScreenL = { 0,0 }; //my Reso
 Actions lastAction;
 int Revenge = 0;
 int triggerCold = 0;
+int riverDryness = 0;
+int rain = 0;
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -45,6 +47,8 @@ static inline bool IsGlacialEpoch();
 static inline bool IsDryEpoch();
 static inline int GetColdResistance();
 
+static inline void ManageSeasons();
+
 int main(int argc, char* argv[])
 {
 	SDL_SetMainReady();
@@ -57,8 +61,8 @@ int main(int argc, char* argv[])
 	lastAction = PLANT;
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
 
-	for (i = 0;i < LMAP;i++) { //Init Grille //init map
-		for (j = 0;j < HMAP;j++) {
+	for (i = 0; i < LMAP; i++) { //Init Grille //init map
+		for (j = 0; j < HMAP; j++) {
 			if (j < 3)
 				Grid[i][j].Object = MOUNTAIN;
 			else if (IsSeaLocation(i, j))
@@ -81,6 +85,7 @@ int main(int argc, char* argv[])
 	Ress.Animals = 10;
 	Ress.Trees = MAXTREES;
 	triggerCold = 0;
+	rain = 0;
 	while (EndMain) {
 		if (Year >= 0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
@@ -93,20 +98,8 @@ int main(int argc, char* argv[])
 				
 				// Repeat last action each turn
 				actions[lastAction]();
-				if (triggerCold > 0) {
-					if (IsGlacialEpoch()) {
-						if (triggerCold >= GetColdResistance()) { // Note : pas de game over possible par le froid
-							int dead = (int)(0.05 * Ress.Pop);
-							Ress.Pop -= dead;
-						}
-						else {
-							++triggerCold;
-						}
-					}
-					else {
-						triggerCold = 0; // Only active during the glacial epoch
-					}
-				}
+
+				ManageSeasons();
 				
 				//Human turn
 				if (era == TRIBAL) {
@@ -141,6 +134,30 @@ static inline int GetColdResistance() {
 		return 10;
 		// @TODO: gérer hopital
 	}
+}
+
+static inline float GetFieldProductivity() {
+	return (30.f - (riverDryness < 30 ? riverDryness : 30)) / 30.f;
+}
+
+static inline void ManageSeasons() {
+	if (triggerCold > 0) {
+		if (IsGlacialEpoch()) {
+			if (triggerCold >= GetColdResistance()) { // Note : pas de game over possible par le froid
+				int dead = (int)(0.05 * Ress.Pop);
+				Ress.Pop -= dead;
+			}
+			else {
+				++triggerCold;
+			}
+		}
+		else {
+			triggerCold = 0; // Only active during the glacial epoch
+		}
+	}
+
+	if (riverDryness < 30)
+		++riverDryness;
 }
 
 static inline void RemoveRandomTrees() {
@@ -187,7 +204,7 @@ static bool IsType(int i, int j, CaseType type) {
 	return false;
 }
 
-static bool IsHouse(int i, int j) {
+static bool IsHabitation(int i, int j) {
 	if (0 <= i && i < LMAP && 0 <= j && j < HMAP) {
 		const CaseType caseType = Grid[i][j].Object;
 		return caseType == HUT || caseType == HOUSE || caseType == APPART;
@@ -197,7 +214,7 @@ static bool IsHouse(int i, int j) {
 }
 
 static bool IsNearHouse(int i, int j) {
-	return IsHouse(i + 1, j) || IsHouse(i + 1, j + 1) || IsHouse(i - 1, j) || IsHouse(i - 1, j - 1);
+	return IsHabitation(i + 1, j) || IsHabitation(i + 1, j + 1) || IsHabitation(i - 1, j) || IsHabitation(i - 1, j - 1);
 }
 
 void Hunt() {
@@ -333,9 +350,9 @@ void MedievalEra() {
 			Ress.Food -= 10;
 
 		}
-		if (Ress.River > 0) {
+		if (Ress.River > 0) { /// Pour gérer sécheresse ?
 			//Harvest
-			Ress.Food -= Ress.Harvest * 5;
+			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
 		}
 		if (Ress.Food > 0 && Ress.Animals > 0) {
 			Hunt();
@@ -413,8 +430,48 @@ void Plant() {
 	}
 }
 
+static void FloodCase(int i, int j) {
+	if (IsHabitation(i, j)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		Ress.Pop -= 1;
+	}
+	else if (IsType(i, j, MILL)) {
+		Grid[i][j].Object = EMPTY_CASE;
+	}
+}
+
 void Rain() {
-	// @TODO
+	if (rain == 0) {
+		if (riverDryness == 0) { // Flood
+			for (int i = 0; i < LMAP; i++) {
+				for (int j = 0; j < HMAP; j++) {
+					if (IsType(i, j, RIVER)) {
+						FloodCase(i - 1, j);
+						FloodCase(i + 1, j);
+
+						FloodCase(i - 1, j - 1);
+						FloodCase(i - 1, j + 1);
+						FloodCase(i + 1, j - 1);
+						FloodCase(i + 1, j + 1);
+
+						FloodCase(i, j - 1);
+						FloodCase(i, j + 1);
+					}
+				}
+			}
+		}
+
+		riverDryness = 0;
+		rain = 1;
+	}
+
+	++rain;
+
+	if (rain >= 7) {
+		// Reset rain
+		lastAction = PLANT;
+		rain = 0;
+	}
 }
 
 void Cold() {
@@ -444,11 +501,9 @@ void Devour() {
 void Drown() {
 	// @TODO: commencer à une case random pour être moins linéaire ?
 	for (int i = 0; i < LMAP; ++i) {
-		for (int j = 25; j < HMAP; ++j) {
+		for (int j = 0; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
 				Grid[i][j].Object = SEA;
-				
-
 				return;
 			}
 		}
@@ -456,8 +511,11 @@ void Drown() {
 }
 
 void SetAsAction(Actions action) {
-	if (action == METEOR && era == TRIBAL) {
+	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDryEpoch()) || (action == COLD && !IsGlacialEpoch())) {
 		return;
+	}
+	else if (rain > 0) {
+		return; // No actions possible during the rain
 	}
 
 	lastAction = action;
