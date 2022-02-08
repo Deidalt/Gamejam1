@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 	srand((int)time(NULL));
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
-	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown };
+	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown, NoAction };
 	lastAction = PLANT;
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
 
@@ -419,6 +419,8 @@ void ContemporaryEra() {
 	RemoveRandomTrees();
 }
 
+void NoAction() {}
+
 void Plant() {
 	int nbTreesAdded = 2;
 	int Rtree = rand() % 101; //destroy random tree
@@ -514,7 +516,8 @@ void Drown() {
 }
 
 void SetAsAction(Actions action) {
-	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDryEpoch()) || (action == COLD && !IsGlacialEpoch())) {
+	bool incendie = false;
+	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDryEpoch()) || (action == COLD && !IsGlacialEpoch()) || (incendie && action == PLANT)) {
 		return;
 	}
 	else if (rain > 0) {

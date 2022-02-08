@@ -69,7 +69,7 @@ extern Ressources Ress;
 
 #define YEARS_PER_SEASON 83
 
-enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NB_ACTIONS };
+enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
 
 void SetAsAction(Actions action);
