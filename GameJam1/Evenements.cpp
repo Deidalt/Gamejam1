@@ -3,6 +3,7 @@
 
 
 #include "Main.h"
+#include "Pixel.h"
 
 void Evenement() {
 	SDL_Event eventV;
@@ -16,7 +17,13 @@ void Evenement() {
 
         }
         case SDL_KEYDOWN: {
-            if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
+            if (eventV.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {//menu
+                if (Menu)
+                    Menu = 0;
+                else
+                    Menu=1;
+            }
+            else if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
                 LastMove.x = 1;
             }
             else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
@@ -70,11 +77,11 @@ void Evenement() {
         }
 	}//fin while event
     if(LastMove.x==1)
-        posMap.x += static_cast<int>(LCASE * Zoom);
+        posxy.x += arrond(LCASE * Zoom);
     else if (LastMove.x == 2)
-        posMap.x -= static_cast<int>(LCASE * Zoom);
+        posxy.x -= arrond(LCASE * Zoom);
     if (LastMove.y == 3)
-        posMap.y += static_cast<int>(LCASE * Zoom);
+        posxy.y += arrond(LCASE * Zoom);
     else if (LastMove.y == 4)
-        posMap.y -= static_cast<int>(LCASE * Zoom);
+        posxy.y -= arrond(LCASE * Zoom);
 }

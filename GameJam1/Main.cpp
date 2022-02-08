@@ -15,16 +15,18 @@ Case Grid[LMAP][HMAP];
 Ressources Ress = { 0 };
 int Year = -1;
 int timegame = 0;
-SDL_Point posMap = { 0,0 };
+SDL_Point posxy = { 0,0 };
 SDL_Point LastMove = { 0,0 }; //1=Droite , 2 =Gauche, 3=Bas, 4=Haut
 Eras era = TRIBAL; //1=tribal, 2=medieval, 3=contemporain
 float Zoom = 1; //same camera for all resolutions
+float Zoom7K = 1;
 SDL_Point ScreenL = { 0,0 }; //my Reso
 Actions lastAction;
-int Revenge = 0;
-int triggerCold = 0;
+int Revenge = 0; //Humans passif
+int triggerCold = 0; //Cold action
 int riverDryness = 0;
-int rain = 0;
+int rain = 0; //rain action
+int Menu = 0; //1 = Menu IG
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -87,7 +89,7 @@ int main(int argc, char* argv[])
 	triggerCold = 0;
 	rain = 0;
 	while (EndMain) {
-		if (Year >= 0) {
+		if (Year >= 0 && Menu==0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
 
 			if (PastYear != Year) {
@@ -116,7 +118,7 @@ int main(int argc, char* argv[])
 			PastYear = Year;
 		}
 		if (Ress.Trees <= 0) {
-			EndMain = 0;
+			Menu = 1; //Game Lost
 		}
 		SDL_Delay(1);
 		Evenement();
@@ -254,9 +256,9 @@ static inline void BuildHut() {
 
 void BuildHouse() {
 	Ress.Houses++;
-	Ress.Trees -= 5;
+	Ress.Trees -= 4;
 	int found = 0;
-	Ress.Treecut += 5;
+	Ress.Treecut += 4;
 	while (!found) {
 		int Rcase = rand() % 900;
 		int CaseI = Rcase % LMAP;
@@ -277,26 +279,25 @@ void BuildShip() {
 	int Built = 0;
 	while (!Built) {
 		int Rcase = rand() % ((LMAP - 2) * 2) + 1; //cases au centre de la mer
-		int CaseI = Rcase / (LMAP - 2);
-		int CaseJ = Rcase % (LMAP - 2);
-		printf("AAA %d %d %d\n", Rcase,CaseI, CaseJ);
-		if (Grid[25+CaseI][1+CaseJ].Object == SEA) {
+		int CaseJ = Rcase / (LMAP - 2);
+		int CaseI = Rcase % (LMAP - 2);
+		if (Grid[1+CaseI][25+CaseJ].Object == SEA) {
 			Built = 1;
-			Grid[25+CaseI][1+CaseJ].Object = SHIP;
+			Grid[1+CaseI][25+CaseJ].Object = SHIP;
 		}
 	}
 }
 
 void BuildMill() {
-	Grid[14][20].Object = MILL; 
+	Grid[13][20].Object = MILL; 
 	Ress.Treecut++;
 }
 
 void BuildFields() {
-	int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
-	Ress.Fish = 1;
-	while (cptHunt) {
-		cptHunt--;
+	//int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
+	//Ress.Fish = 1;
+	while (Ress.Food + 10 > Ress.Harvest * 5) {
+		//cptHunt--;
 		Ress.Harvest++;
 		Ress.Treecut++;
 		for (int i = 14;i > 0;i--) {
@@ -335,7 +336,7 @@ static inline void TribalEra() {
 void MedievalEra() {
 	Ress.Pop += 2;
 	int found = 0;
-	Ress.Treecut = 5;
+	Ress.Treecut = 2;
 	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
 	Ress.Food -= 5;
 	if (Revenge) {
@@ -343,6 +344,9 @@ void MedievalEra() {
 		Ress.Food -= 10;
 		Ress.Animals -= 3;
 		Ress.Hunt += 2;
+	}
+	if ( Ress.River) {
+		BuildFields();
 	}
 	while (Ress.Food > 0) {
 		if (Ress.Fish) {
@@ -363,16 +367,14 @@ void MedievalEra() {
 			BuildShip();
 		}
 	} //end Ress.Food
-	if (Grid[14][20].Object != MILL) {
+	if (Grid[13][20].Object != MILL) {
 		BuildMill();
 
 	}
 	if (Ress.Fish == 0) {
 		BuildShip();
 	}
-	if (Ress.River) {
-		BuildFields();
-	}
+	
 	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
 		BuildHouse();
 	}
@@ -409,7 +411,7 @@ void ContemporaryEra() {
 }
 
 void Plant() {
-	int nbTreesAdded = 1;
+	int nbTreesAdded = 2;
 	int Rtree = rand() % 101; //destroy random tree
 	int i = Rtree % FOREST_H; //10col for 10line
 	int j = Rtree / FOREST_H;
@@ -515,7 +517,7 @@ void SetAsAction(Actions action) {
 		return;
 	}
 	else if (rain > 0) {
-		return; // No actions possible during the rain
+		//return; // No actions possible during the rain
 	}
 
 	lastAction = action;

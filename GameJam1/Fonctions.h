@@ -5,6 +5,7 @@
 
 SDL_Point ToIso(SDL_Point point);
 void QueryText(SDL_Texture* Texture, int* wText, int* hText);
+void QueryText4(SDL_Texture* Texture, int* wText, int* hText);
 
 
 #endif

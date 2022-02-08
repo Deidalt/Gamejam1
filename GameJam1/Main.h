@@ -12,24 +12,31 @@
 #define LMAP 30
 #define HMAP 30
 #define MAXTREES 400
+#define W6K 6000
+#define H6K 3375
 #define W4K 3840
 #define H4K 2160
 #define W2K 1920
 #define H2K 1080
-#define LCASE 158
-#define HCASE 79
+#define LCASE 164 //158
+#define HCASE 83 //79
 #define TIMETURN 1000 //2000
 
 extern SDL_Window* Screen;
 extern int EndMain;
 extern SDL_Renderer *Renderer;
-extern SDL_Point posMap;
+extern SDL_Point posxy;
 extern SDL_Point LastMove;
 enum Eras { TRIBAL, MEDIEVAL, CONTEMPORARY };
 extern Eras era;
 extern float Zoom;
+extern float Zoom7K;
 extern SDL_Point ScreenL;
 extern int Revenge;
+extern int Year;
+extern int Menu;
+extern int triggerCold;
+extern int rain;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
 

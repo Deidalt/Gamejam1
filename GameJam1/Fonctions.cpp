@@ -1,5 +1,6 @@
 
 #include "Fonctions.h"
+#include "Pixel.h"
 
 SDL_Point ToIso(SDL_Point point) {
 	//Normal pos to isometric pos
@@ -12,6 +13,12 @@ SDL_Point ToIso(SDL_Point point) {
 void QueryText(SDL_Texture* Texture, int* wText, int* hText) {
 	//Get sizes and zoom it
 	SDL_QueryTexture(Texture, NULL, NULL, wText, hText);
-	*wText = static_cast<int>(*wText * Zoom);
-	*hText = static_cast<int>(*hText * Zoom);
+	*wText = arrond(*wText * Zoom7K);
+	*hText = arrond(*hText * Zoom7K);
+}
+void QueryText4(SDL_Texture* Texture, int* wText, int* hText) {
+	//Get sizes and zoom it for 4K
+	SDL_QueryTexture(Texture, NULL, NULL, wText, hText);
+	*wText = arrond(*wText * Zoom);
+	*hText = arrond(*hText * Zoom);
 }
