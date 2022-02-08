@@ -158,8 +158,15 @@ static inline void ManageSeasons() {
 		}
 	}
 
-	if (riverDryness < 30)
+	if (riverDryness < 30 && rain == 0)
 		++riverDryness;
+
+	if (rain != 0) {
+		++rain;
+		if (rain == 7) {
+			rain = 0;
+		}
+	}
 }
 
 static inline void RemoveRandomTrees() {
@@ -226,11 +233,11 @@ void Hunt() {
 }
 
 static inline bool IsGlacialEpoch() {
-	return Year / YEARS_PER_SEASON == 1;
+	return (Year / YEARS_PER_SEASON) % 4 == 1;
 }
 
 static inline bool IsDryEpoch() {
-	return Year / YEARS_PER_SEASON == 3;
+	return (Year / YEARS_PER_SEASON) % 4 == 3;
 }
 
 static inline void BuildHut() {
@@ -468,14 +475,6 @@ void Rain() {
 		riverDryness = 0;
 		rain = 1;
 	}
-
-	++rain;
-
-	if (rain >= 7) {
-		// Reset rain
-		lastAction = PLANT;
-		rain = 0;
-	}
 }
 
 void Cold() {
@@ -527,4 +526,17 @@ void SetAsAction(Actions action) {
 
 Actions getCurrentAction() {
 	return lastAction;
+}
+
+bool IsColdOn() {
+	return triggerCold > 0;
+}
+
+int GetSickNumber() {
+	return (triggerCold == 0 ? 0 : (int)(Ress.Pop * 0.05));
+}
+
+const char* GetEraName() {
+	static const char* names[] = { "Printemps", "Hiver", "Automne", "Été" };
+	return names[(Year / YEARS_PER_SEASON) % 4];
 }

@@ -75,4 +75,8 @@ extern Actions lastAction;
 void SetAsAction(Actions action);
 Actions getCurrentAction();
 
+bool IsColdOn();
+int GetSickNumber();
+const char* GetEraName();
+
 #endif

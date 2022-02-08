@@ -297,7 +297,7 @@ void Afficher() {
 
     //HUD HAUT
     #pragma warning(suppress : 4996)
-    sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d ;; Action=%s",Ress.Pop,Ress.Trees,Ress.Animals, ActionName());
+    sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d ;; Action=%s [%s]",Ress.Pop,Ress.Trees,Ress.Animals, ActionName(), GetEraName());
     SDL_Point posRess = { arrond(1000 * Zoom), arrond(50 * Zoom) };
     TTFrender(buff1, ArialNarrowB40, { 255, 255, 255 }, posRess);
     #pragma warning(suppress : 4996)
@@ -323,6 +323,11 @@ void Afficher() {
         sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
+    }
+    if (IsColdOn()) {
+        sprintf(buff1, "Sick %d", GetSickNumber());
+        posRess.y += arrond(70 * Zoom);
+        TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     }
 
     SDL_RenderPresent(Renderer);
