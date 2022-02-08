@@ -14,12 +14,12 @@
 #define MAXTREES 400
 #define W6K 6000
 #define H6K 3375
-#define W4K 3840
-#define H4K 2160
+#define W4K 3840 //3840
+#define H4K 2160 //2160
 #define W2K 1920
 #define H2K 1080
-#define LCASE 164 //158
-#define HCASE 83 //79
+#define LCASE 95 //164
+#define HCASE 48 //83
 #define TIMETURN 1000 //2000
 
 extern SDL_Window* Screen;

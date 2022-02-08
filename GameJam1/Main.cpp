@@ -346,6 +346,11 @@ void MedievalEra() {
 		Ress.Hunt += 2;
 	}
 	if ( Ress.River) {
+		if (Grid[13][20].Object != MILL) {
+			printf("AAB\n");
+			BuildMill();
+
+		}
 		BuildFields();
 	}
 	while (Ress.Food > 0) {
@@ -367,10 +372,7 @@ void MedievalEra() {
 			BuildShip();
 		}
 	} //end Ress.Food
-	if (Grid[13][20].Object != MILL) {
-		BuildMill();
-
-	}
+	
 	if (Ress.Fish == 0) {
 		BuildShip();
 	}

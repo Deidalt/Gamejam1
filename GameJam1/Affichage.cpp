@@ -6,8 +6,8 @@
 #include "Fonctions.h"
 #include "Pixel.h"
 
-#define OMAPY 2470
-#define DECALAGE 18 //Manque un bout à gauche de la map donc on décale tout
+#define OMAPY 1446
+#define DECALAGE 0 //Manque un bout à gauche de la map donc on décale tout
 
 
 void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
@@ -51,7 +51,7 @@ void InitAffichage() {
     Zoom7K = ((float)ScreenL.y) / H6K;
     Zoom = ((float)ScreenL.y) / H4K;
 
-    printf("Zoom7K %.2f\n", Zoom7K);
+    printf("Zoom %.2f\n", Zoom);
 }
 
 static inline const char* const ActionName() {
@@ -63,6 +63,7 @@ static inline const char* const ActionName() {
 }
 
 void Afficher() {
+    SDL_FPoint CaseL = { LCASE + 0.7,HCASE + 0.1 };
     SDL_SetRenderDrawColor(Renderer, 16, 8, 21, 255);
     SDL_RenderClear(Renderer);
     static int Initialised = 0;
@@ -81,6 +82,8 @@ void Afficher() {
     static SDL_Texture* TreeBT[4];
     static SDL_Texture* TreeCT[4];
     static SDL_Texture* HouseAT[4];
+    static SDL_Texture* HouseBT[4];
+    static SDL_Texture* MillT;
     static SDL_Texture* RiverT[3];
     static SDL_Texture* RainT[7];
     static SDL_Texture* SnowT[80];
@@ -100,17 +103,15 @@ void Afficher() {
             TreeCT[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Tiles/House/tribal_house_%d.png", i + 1);
             HouseAT[i] = IMG_LoadTexture(Renderer, buff1);
+            sprintf(buff1, "Assets/Tiles/House/medieval_house_%d.png", i + 1);
+            HouseBT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
         for (i = 0;i < 3;i++) {
-            sprintf(buff1, "Assets/Map/RELIEF_%c1.png", 'A' + i);
+            sprintf(buff1, "Assets/Map/Relief%c.png", 'A' + i);
             MapRe1T[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Map/RELIEF_%c2.png", 'A' + i);
-            MapRe2T[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Map/MAP_base%c1.png", 'A' + i);
+            sprintf(buff1, "Assets/Map/MAP_base%c.png", 'A' + i);
             MapBase1T[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Map/MAP_base%c2.png", 'A' + i);
-            MapBase2T[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Tiles/River/river%d.png", i);
             RiverT[i] = IMG_LoadTexture(Renderer, buff1);
         }
@@ -122,6 +123,8 @@ void Afficher() {
             sprintf(buff1, "Assets/Fx//NeigeNeige_%05d.png", i);
             SnowT[i] = IMG_LoadTexture(Renderer, buff1);
         }
+        sprintf(buff1, "Assets/Tiles/House/moulin.png");
+        MillT = IMG_LoadTexture(Renderer, buff1);
     }
     
     
@@ -129,23 +132,23 @@ void Afficher() {
     int Period = (Year / YEARS_PER_SEASON) % 3;
     //Background and base Map
     QueryText4(BackgroundT, &wText, &hText);
-    QueryText(MapBase1T[Period], &wText2, &hText2);
+    QueryText4(MapBase1T[Period], &wText2, &hText2);
     //SDL_Rect posBackground = { -posxy.x + wText2-wText/2,-posxy.y+hText2/2-hText/2,wText,hText };
     SDL_Rect posBackground = { 0,0,wText,hText };
     SDL_RenderCopy(Renderer, BackgroundT, NULL, &posBackground);
     SDL_Rect posMap = { -posxy.x,-posxy.y,wText2,hText2 };
     SDL_RenderCopy(Renderer, MapBase1T[Period], NULL, &posMap);
-    QueryText(MapBase2T[Period], &wText2, &hText2);
+    /*QueryText(MapBase2T[Period], &wText2, &hText2);
     SDL_Rect posMap2 = { posMap.x+posMap.w,posMap.y,wText2,hText2 };
-    SDL_RenderCopy(Renderer, MapBase2T[Period], NULL, &posMap2);
-    QueryText(MapRe1T[Period], &wText, &hText);
+    SDL_RenderCopy(Renderer, MapBase2T[Period], NULL, &posMap2);*/
+    QueryText4(MapRe1T[Period], &wText, &hText);
     SDL_Rect posMapRe1 = { posMap.x,arrond(posMap.y- hText +posMap.h),wText,hText };
     SDL_RenderCopy(Renderer, MapRe1T[Period], NULL, &posMapRe1);
-    QueryText(MapRe2T[Period], &wText, &hText);
+    /*QueryText(MapRe2T[Period], &wText, &hText);
     SDL_Rect posMapRe2 = { arrond(posMap.x+4895*Zoom7K),arrond(posMap.y - hText + posMap.h),wText,hText };
-    SDL_RenderCopy(Renderer, MapRe2T[Period], NULL, &posMapRe2);
-    QueryText(RiverT[Period], &wText, &hText);
-    SDL_Rect posRiver = { arrond(posMap.x+2200*Zoom7K ),arrond(posMap.y ),wText,hText };
+    SDL_RenderCopy(Renderer, MapRe2T[Period], NULL, &posMapRe2);*/
+    QueryText4(RiverT[Period], &wText, &hText);
+    SDL_Rect posRiver = { arrond(posMap.x ),arrond(posMap.y+posMap.h-hText ),wText,hText };
     if (Ress.River) {
         SDL_RenderCopy(Renderer, RiverT[Ress.River-1], NULL, &posRiver);
     }
@@ -161,29 +164,25 @@ void Afficher() {
                 QueryText(CaseT, &wText, &hText);
                 SDL_Point ObjectP = { i * wText/2  ,j * hText  };
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
-                SDL_Rect posObject = { ObjectIsoP.x - posxy.x,ObjectIsoP.y - posxy.y,wText,hText  };
+                SDL_Rect posObject = { ObjectIsoP.x - posxy.x-300*Zoom,ObjectIsoP.y - posxy.y,wText,hText  };
                 //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };
                 if (Grid[j][i].Object == MOUNTAIN) {
                     SDL_SetTextureColorMod(CaseT, 152, 57, 0);
-                    wText = arrond(LCASE * Zoom7K * 2);
-                    hText = arrond(HCASE * Zoom7K * 2);
-                    SDL_Rect posPlain = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom7K) - posxy.x, arrond((OMAPY + (HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText / 2,wText,hText };
-                    
                 }
                 else if (Grid[j][i].Object == RIVER) {
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
-                    wText = arrond(LCASE * Zoom7K );
-                    hText = arrond(HCASE * Zoom7K );
-                    SDL_Rect posRiver = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom7K) - posxy.x, arrond((OMAPY + (HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText/2,wText,hText };
+                    wText = arrond(LCASE * Zoom );
+                    hText = arrond(HCASE * Zoom );
+                    SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText/2,wText,hText };
                     SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);
 
                 }
                 else if (Grid[j][i].Object == SEA) {
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
-                    wText = arrond(LCASE * Zoom7K * 2);
-                    hText = arrond(HCASE * Zoom7K * 2);
-                    SDL_Rect posPlain = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom7K) - posxy.x, arrond((OMAPY + (HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText / 2,wText,hText };
-                  
+                    wText = arrond(CaseL.x * Zoom);
+                    hText = arrond(CaseL.y * Zoom);
+                    SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText / 2,wText,hText };
+                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);
                 }
                 else if (Grid[j][i].Object == FOREST) {
                     if (Grid[j][i].State == 4)
@@ -195,7 +194,7 @@ void Afficher() {
                         int randTree = 0; //rand à faire
                         //int randTree = j % 3;
                         QueryText(TreeAT[randTree], &wText, &hText);
-                        SDL_Rect posTreeA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom7K) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText, wText, hText };
+                        SDL_Rect posTreeA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
                         if (arb == 0)
                             posTreeA.x += arrond(75 * Zoom7K);
                         else if (arb == 1)
@@ -227,17 +226,27 @@ void Afficher() {
                     SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                     int randHouse = 0; //rand à faire
                     QueryText(HouseAT[randHouse], &wText, &hText);
-                    SDL_Rect posHouseA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom7K) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText, wText, hText };
+                    SDL_Rect posHouseA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
                     SDL_RenderCopy(Renderer, HouseAT[randHouse], NULL, &posHouseA);
 
                 }
-                else if (Grid[j][i].Object == HOUSE)
+                else if (Grid[j][i].Object == HOUSE) {
                     SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                    int randHouse = 0; //rand à faire
+                    QueryText4(HouseBT[randHouse], &wText, &hText);
+                    SDL_Rect posHouseB = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
+                    SDL_RenderCopy(Renderer, HouseBT[randHouse], NULL, &posHouseB);
+                }
                 else if (Grid[j][i].Object == APPART)
                     SDL_SetTextureColorMod(CaseT, 102, 0, 102);
                 else if (Grid[j][i].Object == FIELD) {
-                    if (i == 14 && j == 20)
+                    if (i == 20 && j == 13) {
+                        printf("AAA\n");
                         SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                        QueryText4(MillT, &wText, &hText);
+                        SDL_Rect posMill = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
+                        SDL_RenderCopy(Renderer, MillT, NULL, &posMill);
+                    }
                     else
                         SDL_SetTextureColorMod(CaseT, 255, 255, 153);
                 }
@@ -246,10 +255,6 @@ void Afficher() {
                 }
                 else {
                     SDL_SetTextureColorMod(CaseT, 100, 200, 100);
-                    wText = arrond(LCASE * Zoom7K * 2);
-                    hText = arrond(HCASE * Zoom7K * 2);
-                    SDL_Rect posPlain = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom7K) - posxy.x, arrond((OMAPY + (HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom7K) - posxy.y - hText / 2,wText,hText };
-
                 }
                 SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
                 
@@ -293,30 +298,30 @@ void Afficher() {
     //HUD HAUT
     #pragma warning(suppress : 4996)
     sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d ;; Action=%s",Ress.Pop,Ress.Trees,Ress.Animals, ActionName());
-    SDL_Point posRess = { arrond(1000 * Zoom7K), arrond(50 * Zoom7K) };
+    SDL_Point posRess = { arrond(1000 * Zoom), arrond(50 * Zoom) };
     TTFrender(buff1, ArialNarrowB40, { 255, 255, 255 }, posRess);
     #pragma warning(suppress : 4996)
     sprintf(buff1, "-%d", Ress.Pop);
-    posRess.y += arrond(70 * Zoom7K);
+    posRess.y += arrond(70 * Zoom);
     TTFrender(buff1, ArialNarrowB40, { 255, 150, 150 }, posRess);
     #pragma warning(suppress : 4996)
     sprintf(buff1, "Gathering +5");
-    posRess.y += arrond(70 * Zoom7K);
+    posRess.y += arrond(70 * Zoom);
     TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     if (Ress.Hunt) {
         #pragma warning(suppress : 4996)
         sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
-        posRess.y += arrond(70 * Zoom7K);
+        posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     }
     if (Ress.Fish) {
         sprintf(buff1, "Fish +%d", Ress.Fish * 10);
-        posRess.y += arrond(70 * Zoom7K);
+        posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
     if (Ress.Harvest) {
         sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
-        posRess.y += arrond(70 * Zoom7K);
+        posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
 
