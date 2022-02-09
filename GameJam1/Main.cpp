@@ -26,6 +26,7 @@ int Revenge = 0; //Humans passif
 int triggerCold = 0; //Cold action
 int riverDryness = 0;
 int rain = 0; //rain action
+int fire = 0; //fire event
 int Menu = 0; //1 = Menu IG
 
 static inline void TribalEra();
@@ -45,6 +46,8 @@ void Meteor();
 void Devour();
 void Drown();
 
+void Fire();
+
 static inline bool IsGlacialEpoch();
 static inline bool IsDryEpoch();
 static inline int GetColdResistance();
@@ -63,6 +66,13 @@ int main(int argc, char* argv[])
 	lastAction = PLANT;
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
 
+	Ress.River = 1;
+	Ress.Harvest = 0;
+	Ress.Fish = 0;
+	Ress.Animals = 10;
+	Ress.Trees = 0;
+	triggerCold = 0;
+	rain = 0;
 	for (i = 0; i < LMAP; i++) { //Init Grille //init map
 		for (j = 0; j < HMAP; j++) {
 			if (j < 3)
@@ -77,17 +87,11 @@ int main(int argc, char* argv[])
 		Grid[i][j].State = 0;
 	}
 	SDL_FreeSurface(HitboxRiverS);
-	Grid[10][10].Object = HUT;
+	Grid[5][10].Object = HUT;
 	
 	Year = 0; //Game Starts here
 	timegame = SDL_GetTicks();
-	Ress.River = 1;
-	Ress.Harvest = 0;
-	Ress.Fish = 0;
-	Ress.Animals = 10;
-	Ress.Trees = MAXTREES;
-	triggerCold = 0;
-	rain = 0;
+	
 	while (EndMain) {
 		if (Year >= 0 && Menu==0) {
 			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
@@ -157,9 +161,20 @@ static inline void ManageSeasons() {
 			triggerCold = 0; // Only active during the glacial epoch
 		}
 	}
-
+	if (IsDryEpoch()) {
+		if (fire>0 || rand() % 100 < 50 ) { //3%
+			Fire(); //incendie
+		}
+	}
+	
 	if (riverDryness < 30)
 		++riverDryness;
+	if (riverDryness > 5 && Ress.River == 2) {
+		riverDryness = 0;
+		Ress.River = 1;
+	}
+	if(riverDryness>=30)
+		Ress.River = 0;
 }
 
 static inline void RemoveRandomTrees() {
@@ -169,7 +184,7 @@ static inline void RemoveRandomTrees() {
 		int Rtree = rand() % (FOREST_H* FOREST_W+1); //destroy random tree
 		int i = Rtree % FOREST_H; //10col for 10line
 		int j = Rtree / FOREST_H;
-		if (Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
+		if (Grid[COL_FOREST + i][LINE_FOREST + j].Object == FOREST && Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
 			while (nbTreeCut > 0 && Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
 				Grid[COL_FOREST + i][LINE_FOREST + j].State++;
 				--nbTreeCut;
@@ -194,7 +209,16 @@ static bool IsSeaLocation(int i, int j) {
 }
 
 static bool IsForestLocation(int i, int j) {
-	return i >= 20 && i < 30 && j >= 10 && j < 20;
+	if (i < 19 && j>15)
+		return 0; 
+	if (i >= COL_FOREST && i < COL_FOREST + FOREST_W && j >= LINE_FOREST && j < LINE_FOREST + FOREST_H && Grid[i][j].Object == EMPTY_CASE) {
+		if (rand() % 2) {
+			Ress.Trees += 4;
+			return 1;
+		}
+	}
+	return 0;
+	//return i >= COL_FOREST && i < COL_FOREST+FOREST_W && j >= LINE_FOREST && j < LINE_FOREST+FOREST_H;
 }
 
 static bool IsType(int i, int j, CaseType type) {
@@ -219,6 +243,7 @@ static bool IsNearHouse(int i, int j) {
 	return IsHabitation(i + 1, j) || IsHabitation(i + 1, j + 1) || IsHabitation(i - 1, j) || IsHabitation(i - 1, j - 1);
 }
 
+
 void Hunt() {
 	Ress.Food -= 5;
 	Ress.Hunt++;
@@ -226,11 +251,11 @@ void Hunt() {
 }
 
 static inline bool IsGlacialEpoch() {
-	return Year / YEARS_PER_SEASON == 1;
+	return (Year / YEARS_PER_SEASON) %4 == 3;
 }
 
 static inline bool IsDryEpoch() {
-	return Year / YEARS_PER_SEASON == 3;
+	return (Year / YEARS_PER_SEASON) %4 == 1;
 }
 
 static inline void BuildHut() {
@@ -243,7 +268,7 @@ static inline void BuildHut() {
 		int i = Rcase % 30;
 		int j = Rcase / 30;
 
-		if (Grid[i][j].Object == EMPTY_CASE) {
+		if (Grid[i][j].Object == EMPTY_CASE || (Grid[i][j].Object == FOREST && Grid[i][j].State == 4)) {
 			//check near house
 			if (IsNearHouse(i, j)) {
 				
@@ -263,11 +288,30 @@ void BuildHouse() {
 		int Rcase = rand() % 900;
 		int CaseI = Rcase % LMAP;
 		int CaseJ = Rcase / LMAP;
-		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
+		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
 			//check sides == house
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = HOUSE;
+			}
+		}
+	}
+}
+
+void BuildAppart() {
+	Ress.Apparts++;
+	Ress.Trees -= 10;
+	int found = 0;
+	Ress.Treecut += 10;
+	while (!found) {
+		int Rcase = rand() % 900;
+		int CaseI = Rcase % LMAP;
+		int CaseJ = Rcase / LMAP;
+		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
+			//check sides == house
+			if (IsNearHouse(CaseI, CaseJ)) {
+				found = 1;
+				Grid[CaseI][CaseJ].Object = APPART;
 			}
 		}
 	}
@@ -281,9 +325,9 @@ void BuildShip() {
 		int Rcase = rand() % ((LMAP - 2) * 2) + 1; //cases au centre de la mer
 		int CaseJ = Rcase / (LMAP - 2);
 		int CaseI = Rcase % (LMAP - 2);
-		if (Grid[1+CaseI][25+CaseJ].Object == SEA) {
+		if (Grid[1+CaseI][28+CaseJ].Object == SEA) {
 			Built = 1;
-			Grid[1+CaseI][25+CaseJ].Object = SHIP;
+			Grid[1+CaseI][28+CaseJ].Object = SHIP;
 		}
 	}
 }
@@ -345,28 +389,27 @@ void MedievalEra() {
 		Ress.Animals -= 3;
 		Ress.Hunt += 2;
 	}
-	if ( Ress.River) {
+	if ( Ress.River) { //works while flood
 		if (Grid[13][20].Object != MILL) {
-			printf("AAB\n");
 			BuildMill();
-
 		}
 		BuildFields();
 	}
 	while (Ress.Food > 0) {
-		if (Ress.Fish) {
+		int fishing = Ress.Fish;
+		while (Ress.Food > 0 && fishing) {
 			//1 fisher
 			Ress.Food -= 10;
 
 		}
-		if (Ress.River > 0) { /// Pour gérer sécheresse ?
+		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse ?
 			//Harvest
 			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
 		}
-		if (Ress.Food > 0 && Ress.Animals > 0) {
+		while (Ress.Food > 0 && Ress.Animals > 0) {
 			Hunt();
 		}
-		else while (Ress.Food > 0) {
+		while (Ress.Food > 0) {
 			//build new temporary Ship
 			Ress.Food -= 10;
 			BuildShip();
@@ -413,6 +456,8 @@ void ContemporaryEra() {
 }
 
 void Plant() {
+	if (fire > 0)
+		return;
 	int nbTreesAdded = 2;
 	int Rtree = rand() % 101; //destroy random tree
 	int i = Rtree % FOREST_H; //10col for 10line
@@ -420,7 +465,7 @@ void Plant() {
 	int count = 0; // Avoid looping endlessly if the forest cannot take any more trees
 
 	for (; count < FOREST_W * FOREST_H && nbTreesAdded > 0 && Ress.Trees > 0; j = (j + 1) % FOREST_H, ++count) {
-		if (Grid[COL_FOREST + i][LINE_FOREST + j].State > 0) {
+		if (Grid[COL_FOREST + i][LINE_FOREST + j].Object == FOREST && Grid[COL_FOREST + i][LINE_FOREST + j].State > 0) {
 			while (nbTreesAdded > 0 && Grid[COL_FOREST + i][LINE_FOREST + j].State > 0) {
 				Grid[COL_FOREST + i][LINE_FOREST + j].State--;
 				--nbTreesAdded;
@@ -444,9 +489,44 @@ static void FloodCase(int i, int j) {
 	}
 }
 
+void Fire() {
+	int found = 0;
+	if (fire == 0) {
+		//first fire
+		while (Ress.Trees > 0 && found == 0) {
+			int Rtree = rand() % (FOREST_H * FOREST_W + 1); //fire random tree
+			int i = Rtree % FOREST_H; //10col for 10line
+			int j = Rtree / FOREST_H;
+			if (Grid[COL_FOREST + i][LINE_FOREST + j].Object == FOREST && Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
+				Grid[COL_FOREST + i][LINE_FOREST + j].State += 5;
+				Ress.Trees -= Grid[COL_FOREST + i][LINE_FOREST + j].State - 4;
+				fire++;
+				found = 1;
+			}
+		}
+	}
+	else {
+		int cptfire = fire + 30; //fire exponential
+		while (Ress.Trees > 0 && cptfire > 0) {
+			int Rtree = rand() % (FOREST_H * FOREST_W + 1); //fire random tree
+			int i = Rtree % FOREST_H; //10col for 10line
+			int j = Rtree / FOREST_H;
+			if (Grid[COL_FOREST + i][LINE_FOREST + j].Object == FOREST && Grid[COL_FOREST + i][LINE_FOREST + j].State < 4) {
+				if (Grid[COL_FOREST + i+1][LINE_FOREST + j].State > 4 || Grid[COL_FOREST + i - 1][LINE_FOREST + j].State > 4 || Grid[COL_FOREST + i][LINE_FOREST + j+1].State > 4 || Grid[COL_FOREST +i][LINE_FOREST + j-1].State > 4) {
+					Grid[COL_FOREST + i][LINE_FOREST + j].State += 5;
+					Ress.Trees -= Grid[COL_FOREST + i][LINE_FOREST + j].State - 4;
+					fire++;
+				}
+			}
+			cptfire--;
+		}
+	}
+}
+
 void Rain() {
 	if (rain == 0) {
-		if (riverDryness == 0) { // Flood
+		if (Ress.River) { // Flood
+			Ress.River = 2;
 			for (int i = 0; i < LMAP; i++) {
 				for (int j = 0; j < HMAP; j++) {
 					if (IsType(i, j, RIVER)) {
@@ -464,7 +544,20 @@ void Rain() {
 				}
 			}
 		}
-
+		else
+			Ress.River = 1;
+		if (fire) {
+			for (int i = COL_FOREST; i < COL_FOREST+FOREST_W; i++) {
+				for (int j = LINE_FOREST; j < LINE_FOREST+FOREST_H; j++) {
+					if (IsType(i, j, FOREST) && Grid[i][j].State > 4) {
+						//extinguished fire
+						fire = 0;
+						Grid[i][j].State = 4;
+					}
+				}
+			}
+		}
+		
 		riverDryness = 0;
 		rain = 1;
 	}
