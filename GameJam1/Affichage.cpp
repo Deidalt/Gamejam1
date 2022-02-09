@@ -9,6 +9,10 @@
 #define OMAPY 1446
 #define DECALAGE 0 //Manque un bout à gauche de la map donc on décale tout
 
+struct sTree {
+    int init = 0;
+    SDL_Point posArb[4]; 
+};
 
 void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
@@ -70,6 +74,7 @@ void Afficher() {
     int i = 0, j = 0; //loop
     int wText = 0, hText = 0, wText2,hText2; //dimensions des textures récupérées
     char buff1[100]; //
+    static sTree posTree[30][30];
 
     static TTF_Font* ArialNarrowB40 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 40);
     //Textures init
@@ -84,13 +89,16 @@ void Afficher() {
     static SDL_Texture* HouseAT[4];
     static SDL_Texture* HouseBT[4];
     static SDL_Texture* MillT;
+    static SDL_Texture* FieldT[3];
+    static SDL_Texture* ShipT;
     static SDL_Texture* RiverT[3];
     static SDL_Texture* RainT[7];
     static SDL_Texture* SnowT[80];
+    static SDL_Texture* FireT[6];
 
     if (Initialised == 0) {
         //Vars init
-        Initialised = 2;
+        Initialised = 1;
         for (i = 0;i < 4;i++) {
 #pragma warning(suppress : 4996)
             sprintf(buff1, "Assets/Tiles/Trees/tree_%d_tempere.png", i + 1);
@@ -123,8 +131,18 @@ void Afficher() {
             sprintf(buff1, "Assets/Fx//NeigeNeige_%05d.png", i);
             SnowT[i] = IMG_LoadTexture(Renderer, buff1);
         }
-        sprintf(buff1, "Assets/Tiles/House/moulin.png");
+        for (i = 0;i < 6;i++) {
+            sprintf(buff1, "Assets/Fx/Feu/Feu_1_%05d.png", i);
+            FireT[i] = IMG_LoadTexture(Renderer, buff1);
+        }
+        sprintf(buff1, "Assets/Tiles/Other/moulin.png");
         MillT = IMG_LoadTexture(Renderer, buff1);
+        for (i = 0;i < 3;i++) {
+            sprintf(buff1, "Assets/Tiles/Other/Field%d.png",i);
+            FieldT[i] = IMG_LoadTexture(Renderer, buff1);
+        }
+        sprintf(buff1, "Assets/Tiles/Other/Ship.png");
+        ShipT = IMG_LoadTexture(Renderer, buff1);
     }
     
     
@@ -171,62 +189,92 @@ void Afficher() {
                 }
                 else if (Grid[j][i].Object == RIVER) {
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
-                    wText = arrond(LCASE * Zoom );
-                    hText = arrond(HCASE * Zoom );
-                    SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText/2,wText,hText };
-                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);
-
                 }
                 else if (Grid[j][i].Object == SEA) {
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
-                    wText = arrond(CaseL.x * Zoom);
+                    /*wText = arrond(CaseL.x * Zoom);
                     hText = arrond(CaseL.y * Zoom);
                     SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText / 2,wText,hText };
-                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);
+                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);*/
                 }
                 else if (Grid[j][i].Object == FOREST) {
                     if (Grid[j][i].State == 4)
                         SDL_SetTextureColorMod(CaseT, 100, 150, 100);
                     else
                         SDL_SetTextureColorMod(CaseT, 100, 255, 100);
-                    for (int arb = 0; arb < 4 - Grid[j][i].State; arb++) { //
-                        //Mapping des arbres RandTree à set en static
-                        int randTree = 0; //rand à faire
-                        //int randTree = j % 3;
-                        QueryText(TreeAT[randTree], &wText, &hText);
-                        SDL_Rect posTreeA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
-                        if (arb == 0)
-                            posTreeA.x += arrond(75 * Zoom7K);
-                        else if (arb == 1)
-                            posTreeA.x += arrond(225 * Zoom7K);
-                        else if (arb == 2) {
-                            posTreeA.x += arrond(150 * Zoom7K);
-                            posTreeA.y -= arrond(40 * Zoom7K);
+                    if (Grid[j][i].State > 4) { //fire
+                        static int cptFire = 0;
+                        static int timerFire = SDL_GetTicks() + 83;
+                        if (timerFire < SDL_GetTicks()) {
+                            cptFire++;
+                            if (cptFire > 5)
+                                cptFire = 0;
+                            timerFire = SDL_GetTicks() - timerFire + SDL_GetTicks() + 83;
+                            timerFire < SDL_GetTicks();
+                            timerFire = SDL_GetTicks() + 83;
                         }
-                        else if (arb == 3) {
-                            posTreeA.x += arrond(150 * Zoom7K);
-                            posTreeA.y += arrond(40 * Zoom7K);
+                        QueryText4(FireT[cptFire], &wText, &hText);
+                        SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
+                    }
+                    if (Grid[j][i].State < 4) {
+                        for (int arb = 0; arb < 4 - Grid[j][i].State%5; arb++) {
+                            //Mapping des arbres RandTree à set en static
+                            int randTree = 0; //rand à faire
+                            //int randTree = j % 3;
+                            QueryText(TreeAT[randTree], &wText, &hText);
+                            //init positions of each tree randomly in his case
+                            if (posTree[j][i].init < 4) { 
+                                if (arb == 0) {
+                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x);
+                                    posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText - arrond(Zoom * CaseL.y / 2);
+                                }
+                                else if (arb == 1) {
+                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x / 2);
+                                    posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText;
+                                }
+                                else if (arb == 2) {
+                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x * 1.5);
+                                    posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText;
+                                }
+                                else if (arb == 3) {
+                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x);
+                                    posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText + arrond(Zoom * CaseL.y / 2);
+                                }
+                                if (randTree == 0) {
+                                    posTree[j][i].posArb[arb].x -= arrond((45 + rand() % 40) * Zoom7K);
+                                    posTree[j][i].posArb[arb].y += arrond((55 + rand() % 40) * Zoom7K);
+                                }
+                                if (randTree == 1) {
+                                    posTree[j][i].posArb[arb].x -= arrond(165 * Zoom);
+                                    posTree[j][i].posArb[arb].y -= arrond(135 * Zoom);
+                                }
+                                if (randTree == 2) {
+                                    posTree[j][i].posArb[arb].x -= arrond(215 * Zoom);
+                                    posTree[j][i].posArb[arb].y -= arrond(167 * Zoom);
+                                }
+                                posTree[j][i].init ++;
+                            }
+                            SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
+                            SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posFinal);
                         }
-                        if (randTree == 0) {
-                            posTreeA.x -= arrond(67 * Zoom7K);
-                            posTreeA.y -= arrond(165 * Zoom7K);
+                    }
+                    else if (Grid[j][i].State > 4) {
+                        for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
+                            int randTree = 0; //rand à faire
+                            QueryText(TreeAT[randTree], &wText, &hText);
+                            SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
+                            SDL_SetTextureColorMod(TreeAT[randTree],0,0,0);
+                            SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posFinal);
+                            SDL_SetTextureColorMod(TreeAT[randTree], 255, 255, 255);
                         }
-                        if (randTree == 1) {
-                            posTreeA.x -= arrond(165 * Zoom7K);
-                            posTreeA.y -= arrond(135 * Zoom7K);
-                        }
-                        if (randTree == 2) {
-                            posTreeA.x -= arrond(215 * Zoom7K);
-                            posTreeA.y -= arrond(167 * Zoom7K);
-                        }
-                        SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posTreeA);
                     }
                 }
                 else if (Grid[j][i].Object == HUT) {
                     SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                     int randHouse = 0; //rand à faire
                     QueryText(HouseAT[randHouse], &wText, &hText);
-                    SDL_Rect posHouseA = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
+                    SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                     SDL_RenderCopy(Renderer, HouseAT[randHouse], NULL, &posHouseA);
 
                 }
@@ -234,24 +282,33 @@ void Afficher() {
                     SDL_SetTextureColorMod(CaseT, 204, 0, 204);
                     int randHouse = 0; //rand à faire
                     QueryText4(HouseBT[randHouse], &wText, &hText);
-                    SDL_Rect posHouseB = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
+                    SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                     SDL_RenderCopy(Renderer, HouseBT[randHouse], NULL, &posHouseB);
                 }
                 else if (Grid[j][i].Object == APPART)
                     SDL_SetTextureColorMod(CaseT, 102, 0, 102);
                 else if (Grid[j][i].Object == FIELD) {
                     if (i == 20 && j == 13) {
-                        printf("AAA\n");
                         SDL_SetTextureColorMod(CaseT, 230, 153, 0);
                         QueryText4(MillT, &wText, &hText);
-                        SDL_Rect posMill = { arrond((LCASE * (LMAP - i - 1) + LCASE * j - DECALAGE) * Zoom) - posxy.x, arrond(posMap.h / 2 + ((HCASE * i) - (HCASE * (LMAP - j - 1))) * Zoom) - posxy.y - hText, wText, hText };
+                        SDL_Rect posMill = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                         SDL_RenderCopy(Renderer, MillT, NULL, &posMill);
                     }
-                    else
+                    else {
+                        int idField = 1;
+                        if (Ress.River == 0)
+                            idField = 2;
                         SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                        QueryText4(FieldT[idField], &wText, &hText);
+                        SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, FieldT[idField], NULL, &posField);
+                    }
                 }
                 else if (Grid[j][i].Object == SHIP) {
                     SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                    QueryText4(ShipT, &wText, &hText);
+                    SDL_Rect posShip = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                    SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
                 }
                 else {
                     SDL_SetTextureColorMod(CaseT, 100, 200, 100);
@@ -262,7 +319,6 @@ void Afficher() {
         }
         SDL_DestroyTexture(CaseT);
     }
-
     //FX
     if (rain) {
         static int cptRain = 0;

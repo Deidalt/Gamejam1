@@ -37,12 +37,14 @@ extern int Year;
 extern int Menu;
 extern int triggerCold;
 extern int rain;
+extern int fire;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
 
 struct Case {
 	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Ship
-	int State; //0= Building, 1=Built, 2=Destroyed ; OR number of tree destroyed
+	int State; //0= Building, 1=Built, 2=Destroyed ; 
+	//State for trees : 0-4 number of tree destroyed, 5 on fire
 };
 extern Case Grid[LMAP][HMAP];
 
@@ -62,12 +64,12 @@ struct Ressources {
 };
 extern Ressources Ress;
 
-#define COL_FOREST 20
-#define LINE_FOREST 10
-#define FOREST_W 10
-#define FOREST_H 10
+#define COL_FOREST 13
+#define LINE_FOREST 3
+#define FOREST_W 16
+#define FOREST_H 19
 
-#define YEARS_PER_SEASON 83
+#define YEARS_PER_SEASON  30//83
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
