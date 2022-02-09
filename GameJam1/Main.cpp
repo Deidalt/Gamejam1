@@ -45,6 +45,7 @@ void Cold();
 void Meteor();
 void Devour();
 void Drown();
+void NoAction();
 
 void Fire();
 

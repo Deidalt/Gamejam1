@@ -60,7 +60,7 @@ void InitAffichage() {
 
 static inline const char* const ActionName() {
     static const char* names[NB_ACTIONS] = {
-        "Plant", "Rain", "Cold", "Meteor", "Devour", "Drown"
+        "Plant", "Rain", "Cold", "Meteor", "Devour", "Drown", "Do nothing"
     };
 
     return names[getCurrentAction()];
