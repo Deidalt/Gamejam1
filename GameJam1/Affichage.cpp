@@ -54,6 +54,7 @@ void InitAffichage() {
     ScreenL.y = DM.h;
     Zoom7K = ((float)ScreenL.y) / H6K;
     Zoom = ((float)ScreenL.y) / H4K;
+    Zoom2K = ((float)ScreenL.y) / H2K;
 
     printf("Zoom %.2f\n", Zoom);
 }
@@ -73,7 +74,8 @@ void Afficher() {
     static int Initialised = 0;
     int i = 0, j = 0; //loop
     int wText = 0, hText = 0, wText2,hText2; //dimensions des textures récupérées
-    char buff1[100]; //
+    char buff1[100]; 
+    char buff2[50]; 
     static sTree posTree[30][30];
 
     static TTF_Font* ArialNarrowB40 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 40);
@@ -128,7 +130,7 @@ void Afficher() {
             RainT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 80;i++) {
-            sprintf(buff1, "Assets/Fx//NeigeNeige_%05d.png", i);
+            sprintf(buff1, "Assets/Fx//Neige/Neige 2_%05d.png", i);
             SnowT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 6;i++) {
@@ -143,11 +145,18 @@ void Afficher() {
         }
         sprintf(buff1, "Assets/Tiles/Other/Ship.png");
         ShipT = IMG_LoadTexture(Renderer, buff1);
+        Year = 0; //Game Starts here
+
     }
     
     
 
-    int Period = (Year / YEARS_PER_SEASON) % 3;
+    int Period = (Year / YEARS_PER_SEASON) % 4;
+    if (Period == 2)
+        Period = 0;
+    if (Period == 3)
+        Period = 2;
+
     //Background and base Map
     QueryText4(BackgroundT, &wText, &hText);
     QueryText4(MapBase1T[Period], &wText2, &hText2);
@@ -189,6 +198,10 @@ void Afficher() {
                 }
                 else if (Grid[j][i].Object == RIVER) {
                     SDL_SetTextureColorMod(CaseT, 100, 100, 250);
+                    /*wText = arrond(CaseL.x * Zoom*1.8);
+                    hText = arrond(CaseL.y * Zoom*1.8);
+                    SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText / 2,wText,hText };
+                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);*/
                 }
                 else if (Grid[j][i].Object == SEA) {
                     SDL_SetTextureColorMod(CaseT, 30, 0, 200);
@@ -264,7 +277,7 @@ void Afficher() {
                             int randTree = 0; //rand à faire
                             QueryText(TreeAT[randTree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            SDL_SetTextureColorMod(TreeAT[randTree],0,0,0);
+                            SDL_SetTextureColorMod(TreeAT[randTree],255,10,50);
                             SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posFinal);
                             SDL_SetTextureColorMod(TreeAT[randTree], 255, 255, 255);
                         }
@@ -310,6 +323,18 @@ void Afficher() {
                     SDL_Rect posShip = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                     SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
                 }
+                else if (Grid[j][i].Object == HOSPI) {
+                    SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                }
+                else if (Grid[j][i].Object == FIRESTATION) {
+                    SDL_SetTextureColorMod(CaseT, 255, 0, 0);
+                }
+                else if (Grid[j][i].Object == BARRAGE) {
+                    SDL_SetTextureColorMod(CaseT, 200, 200, 200);
+                }
+                else if (Grid[j][i].Object == SECOURIST) {
+                    SDL_SetTextureColorMod(CaseT, 0, 0, 0);
+                }
                 else {
                     SDL_SetTextureColorMod(CaseT, 100, 200, 100);
                 }
@@ -334,6 +359,7 @@ void Afficher() {
         QueryText4(RainT[0], &wText, &hText);
         SDL_Rect posMeteo = { 0,0,wText,hText };
         SDL_RenderCopy(Renderer, RainT[cptRain], NULL, &posMeteo);
+
     }
     else if (triggerCold) {
         static int cptSnow = 0;
@@ -346,15 +372,18 @@ void Afficher() {
             timerSnow < SDL_GetTicks();
                 timerSnow = SDL_GetTicks() + 83;
         }
-        QueryText4(SnowT[0], &wText, &hText);
+        QueryText2(SnowT[0], &wText, &hText);
         SDL_Rect posMeteo = { 0,0,wText,hText };
         SDL_RenderCopy(Renderer, SnowT[cptSnow], NULL, &posMeteo);
     }
 
     //HUD HAUT
-    #pragma warning(suppress : 4996)
-    sprintf(buff1, "Food   Pop=%d Trees=%d Animals=%d ;; Action=%s [%s]",Ress.Pop,Ress.Trees,Ress.Animals, ActionName(), GetEraName());
-    SDL_Point posRess = { arrond(1000 * Zoom), arrond(50 * Zoom) };
+
+    sprintf(buff1, "%s era | Year %d", GetEraName(),Year);
+    SDL_Point posYear = { arrond(20 * Zoom), arrond(50 * Zoom) };
+    TTFrender(buff1, ArialNarrowB40, { 0, 0, 0 }, posYear);
+    sprintf(buff1, "Food  |  Pop=%d Trees=%d Animals=%d  ||  Action=%s [%s]",Ress.Pop,Ress.Trees,Ress.Animals, ActionName(), GetPeriodName());
+    SDL_Point posRess = { arrond(1100 * Zoom), arrond(50 * Zoom) };
     TTFrender(buff1, ArialNarrowB40, { 255, 255, 255 }, posRess);
     #pragma warning(suppress : 4996)
     sprintf(buff1, "-%d", Ress.Pop);
@@ -366,7 +395,7 @@ void Afficher() {
     TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     if (Ress.Hunt) {
         #pragma warning(suppress : 4996)
-        sprintf(buff1, "Hunt +%d", Ress.Hunt * 5);
+        sprintf(buff1, "Hunt +%d", Ress.Hunt * 10);
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150, 255, 150 }, posRess);
     }
@@ -375,7 +404,7 @@ void Afficher() {
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);
     }
-    if (Ress.Harvest) {
+    if (Ress.Harvest && Ress.River) {
         sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB40, { 150,255,150 }, posRess);

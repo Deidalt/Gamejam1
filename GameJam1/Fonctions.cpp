@@ -22,3 +22,9 @@ void QueryText4(SDL_Texture* Texture, int* wText, int* hText) {
 	*wText = arrond(*wText * Zoom);
 	*hText = arrond(*hText * Zoom);
 }
+void QueryText2(SDL_Texture* Texture, int* wText, int* hText) {
+	//Get sizes and zoom it for 2K
+	SDL_QueryTexture(Texture, NULL, NULL, wText, hText);
+	*wText = arrond(*wText * Zoom2K);
+	*hText = arrond(*hText * Zoom2K);
+}
