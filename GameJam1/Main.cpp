@@ -49,8 +49,8 @@ void NoAction();
 
 void Fire();
 
-static inline bool IsGlacialEpoch();
-static inline bool IsDryEpoch();
+bool IsGlacialSeason();
+bool IsDrySeason();
 static inline int GetColdResistance();
 
 static inline void ManageSeasons();
@@ -149,7 +149,7 @@ static inline float GetFieldProductivity() {
 
 static inline void ManageSeasons() {
 	if (triggerCold > 0) {
-		if (IsGlacialEpoch()) {
+		if (IsGlacialSeason()) {
 			if (triggerCold >= GetColdResistance()) { // Note : pas de game over possible par le froid
 				int dead = (int)(0.05 * Ress.Pop);
 				Ress.Pop -= dead;
@@ -168,8 +168,9 @@ static inline void ManageSeasons() {
 			rain = 0;
 		}
 	}
-	if (IsDryEpoch()) {
-		if (fire>0 || rand() % 100 < 50 ) { //3%
+
+	if (IsDrySeason()) {
+		if (fire > 0 || rand() % 100 < 50 ) { //3%
 			Fire(); //incendie
 		}
 	}
@@ -257,12 +258,12 @@ void Hunt() {
 	Ress.Animals--;
 }
 
-static inline bool IsGlacialEpoch() {
-	return (Year / YEARS_PER_SEASON) %4 == 3;
+bool IsGlacialSeason() {
+	return (Year / YEARS_PER_SEASON) % 4 == 3;
 }
 
-static inline bool IsDryEpoch() {
-	return (Year / YEARS_PER_SEASON) %4 == 1;
+bool IsDrySeason() {
+	return (Year / YEARS_PER_SEASON) % 4 == 1;
 }
 
 static inline void BuildHut() {
@@ -555,7 +556,7 @@ void Rain() {
 		}
 		else
 			Ress.River = 1;
-		if (fire) {
+		if (fire > 0) {
 			for (int i = COL_FOREST; i < COL_FOREST+FOREST_W; i++) {
 				for (int j = LINE_FOREST; j < LINE_FOREST+FOREST_H; j++) {
 					if (IsType(i, j, FOREST) && Grid[i][j].State > 4) {
@@ -573,7 +574,7 @@ void Rain() {
 }
 
 void Cold() {
-	if (IsGlacialEpoch()) {
+	if (IsGlacialSeason()) {
 		triggerCold = 1;
 	}
 }
@@ -609,8 +610,8 @@ void Drown() {
 }
 
 void SetAsAction(Actions action) {
-	bool incendie = false;
-	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDryEpoch()) || (action == COLD && !IsGlacialEpoch()) || (incendie && action == PLANT)) {
+	bool incendie = fire > 0;
+	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDrySeason()) || (action == COLD && !IsGlacialSeason()) || (incendie && action == PLANT)) {
 		return;
 	}
 	else if (rain > 0) {
@@ -633,6 +634,6 @@ int GetSickNumber() {
 }
 
 const char* GetEraName() {
-	static const char* names[] = { "Printemps", "Hiver", "Automne", "Été" };
+	static const char* names[] = { "Automne", "Été", "Printemps", "Hiver" };
 	return names[(Year / YEARS_PER_SEASON) % 4];
 }

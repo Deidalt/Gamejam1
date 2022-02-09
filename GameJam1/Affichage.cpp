@@ -66,6 +66,8 @@ static inline const char* const ActionName() {
     return names[getCurrentAction()];
 }
 
+enum { PRINTEMPS, ETE, HIVER, AUTOMNE = PRINTEMPS };
+
 void Afficher() {
     SDL_FPoint CaseL = { LCASE + 0.7,HCASE + 0.1 };
     SDL_SetRenderDrawColor(Renderer, 16, 8, 21, 255);
@@ -115,7 +117,8 @@ void Afficher() {
             HouseBT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
-        for (i = 0;i < 3;i++) {
+
+        for (i = 0; i < 3;i++) {
             sprintf(buff1, "Assets/Map/Relief%c.png", 'A' + i);
             MapRe1T[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Map/MAP_base%c.png", 'A' + i);
@@ -147,25 +150,32 @@ void Afficher() {
     
     
 
-    int Period = (Year / YEARS_PER_SEASON) % 3;
+    int period = PRINTEMPS;
+    if (IsDrySeason()) {
+        period = ETE;
+    }
+    else if (IsGlacialSeason()) {
+        period = HIVER;
+    }
+
     //Background and base Map
     QueryText4(BackgroundT, &wText, &hText);
-    QueryText4(MapBase1T[Period], &wText2, &hText2);
+    QueryText4(MapBase1T[period], &wText2, &hText2);
     //SDL_Rect posBackground = { -posxy.x + wText2-wText/2,-posxy.y+hText2/2-hText/2,wText,hText };
     SDL_Rect posBackground = { 0,0,wText,hText };
     SDL_RenderCopy(Renderer, BackgroundT, NULL, &posBackground);
     SDL_Rect posMap = { -posxy.x,-posxy.y,wText2,hText2 };
-    SDL_RenderCopy(Renderer, MapBase1T[Period], NULL, &posMap);
-    /*QueryText(MapBase2T[Period], &wText2, &hText2);
+    SDL_RenderCopy(Renderer, MapBase1T[period], NULL, &posMap);
+    /*QueryText(MapBase2T[period], &wText2, &hText2);
     SDL_Rect posMap2 = { posMap.x+posMap.w,posMap.y,wText2,hText2 };
-    SDL_RenderCopy(Renderer, MapBase2T[Period], NULL, &posMap2);*/
-    QueryText4(MapRe1T[Period], &wText, &hText);
+    SDL_RenderCopy(Renderer, MapBase2T[period], NULL, &posMap2);*/
+    QueryText4(MapRe1T[period], &wText, &hText);
     SDL_Rect posMapRe1 = { posMap.x,arrond(posMap.y- hText +posMap.h),wText,hText };
-    SDL_RenderCopy(Renderer, MapRe1T[Period], NULL, &posMapRe1);
-    /*QueryText(MapRe2T[Period], &wText, &hText);
+    SDL_RenderCopy(Renderer, MapRe1T[period], NULL, &posMapRe1);
+    /*QueryText(MapRe2T[period], &wText, &hText);
     SDL_Rect posMapRe2 = { arrond(posMap.x+4895*Zoom7K),arrond(posMap.y - hText + posMap.h),wText,hText };
-    SDL_RenderCopy(Renderer, MapRe2T[Period], NULL, &posMapRe2);*/
-    QueryText4(RiverT[Period], &wText, &hText);
+    SDL_RenderCopy(Renderer, MapRe2T[period], NULL, &posMapRe2);*/
+    QueryText4(RiverT[period], &wText, &hText);
     SDL_Rect posRiver = { arrond(posMap.x ),arrond(posMap.y+posMap.h-hText ),wText,hText };
     if (Ress.River) {
         SDL_RenderCopy(Renderer, RiverT[Ress.River-1], NULL, &posRiver);

@@ -81,4 +81,7 @@ bool IsColdOn();
 int GetSickNumber();
 const char* GetEraName();
 
+bool IsGlacialSeason();
+bool IsDrySeason();
+
 #endif
