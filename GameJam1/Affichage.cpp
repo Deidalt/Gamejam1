@@ -223,6 +223,7 @@ void Afficher() {
                             timerFire < SDL_GetTicks();
                             timerFire = SDL_GetTicks() + 83;
                         }
+
                         QueryText4(FireT[cptFire], &wText, &hText);
                         SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                         SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
