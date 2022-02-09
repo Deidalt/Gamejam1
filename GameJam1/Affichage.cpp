@@ -168,7 +168,6 @@ void Afficher() {
     QueryText4(RiverT[Period], &wText, &hText);
     SDL_Rect posRiver = { arrond(posMap.x ),arrond(posMap.y+posMap.h-hText ),wText,hText };
     if (Ress.River) {
-        printf("aaa  %d\n", Ress.River);
         SDL_RenderCopy(Renderer, RiverT[Ress.River-1], NULL, &posRiver);
     }
 
