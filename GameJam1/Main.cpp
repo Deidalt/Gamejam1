@@ -29,6 +29,7 @@ int riverDryness = 0;
 int rain = 0; //rain action
 int fire = 0; //fire event
 int Menu = 0; //1 = Menu IG
+int ActionAuto = 0; //if not 0, action is save for when it is possible
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -82,13 +83,16 @@ int main(int argc, char* argv[])
 				Grid[i][j].Object = SEA;
 			else if (IsRiverLocation(HitboxRiverS, i, j))
 				Grid[i][j].Object = RIVER;
-			else if (initForestLocation(i, j))
+			else if (initForestLocation(i, j)) {
 				Grid[i][j].Object = FOREST;
+				Grid[i][j].id = rand() % 4;
+			}
 		}
 		Grid[i][j].State = 0;
 	}
 	SDL_FreeSurface(HitboxRiverS);
 	Grid[5][10].Object = HUT;
+	Grid[5][10].id = rand() % 4;
 	
 	timegame = SDL_GetTicks();
 	Afficher(); //init game
@@ -171,9 +175,14 @@ static inline void ManageSeasons() {
 		}
 	}
 	if (IsDryEpoch()) {
+		ActionAuto = 1;
 		if (fire>0 || rand() % 100 < 50 ) { //3%
 			Fire(); //incendie
 		}
+	}
+	else if (ActionAuto == 1) {
+		SetAsAction(RAIN);
+		ActionAuto = 0;
 	}
 	if (era == CONTEMPORARY) {
 		//Barrage upgrade
@@ -234,7 +243,7 @@ static bool initForestLocation(int i, int j) {
 	if (i < 19 && j>15)
 		return 0; 
 	if (i >= COL_FOREST && i < COL_FOREST + FOREST_W && j >= LINE_FOREST && j < LINE_FOREST + FOREST_H && Grid[i][j].Object == EMPTY_CASE) {
-		if (rand() % 2) {
+		if (rand() % 3) {
 			Ress.Trees += 4;
 			return 1;
 		}
@@ -286,7 +295,7 @@ static inline void BuildHut() {
 	Ress.Huts++;
 
 	while (!found) {
-		int Rcase = rand() % 900;
+		int Rcase = rand() % (LMAP*HMAP);
 		int i = Rcase % 30;
 		int j = Rcase / 30;
 
@@ -296,6 +305,8 @@ static inline void BuildHut() {
 				
 				found = true;
 				Grid[i][j].Object = HUT;
+				Grid[i][j].id = rand() % 4;
+				Grid[i][j].State = SDL_GetTicks() + 2000;
 			}
 		}
 	}
@@ -306,7 +317,7 @@ void BuildHouse() {
 	int found = 0;
 	Ress.Treecut += 4;
 	while (!found) {
-		int Rcase = rand() % 900;
+		int Rcase = rand() % (LMAP*HMAP);
 		int CaseI = Rcase % LMAP;
 		int CaseJ = Rcase / LMAP;
 		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
@@ -314,6 +325,8 @@ void BuildHouse() {
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = HOUSE;
+				Grid[CaseI][CaseJ].id = rand() % 4;
+				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
 	}
@@ -324,7 +337,7 @@ void BuildAppart() {
 	int found = 0;
 	Ress.Treecut += 10;
 	while (!found) {
-		int Rcase = rand() % 900;
+		int Rcase = rand() % (LMAP*HMAP);
 		int CaseI = Rcase % LMAP;
 		int CaseJ = Rcase / LMAP;
 		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
@@ -332,6 +345,8 @@ void BuildAppart() {
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = APPART;
+				Grid[CaseI][CaseJ].id = rand() % 4;
+				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
 	}
@@ -342,12 +357,13 @@ void BuildShip() {
 	Ress.Treecut++;
 	int Built = 0;
 	while (!Built) {
-		int Rcase = rand() % ((LMAP - 2) * 2) + 1; //cases au centre de la mer
+		int Rcase = rand() % ((LMAP - 2) * 2) ; //cases au centre de la mer
 		int CaseJ = Rcase / (LMAP - 2);
 		int CaseI = Rcase % (LMAP - 2);
 		if (Grid[1+CaseI][28+CaseJ].Object == SEA) {
 			Built = 1;
 			Grid[1+CaseI][28+CaseJ].Object = SHIP;
+			Grid[1+CaseI][28+CaseJ].State = SDL_GetTicks() + 2000;
 		}
 	}
 }
@@ -355,12 +371,35 @@ void BuildShip() {
 void BuildMill() {
 	Grid[13][20].Object = MILL; 
 	Ress.Treecut++;
+	Grid[13][20].State = SDL_GetTicks() + 2000;
+}
+
+void BuildFields() {
+	//int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
+	//Ress.Fish = 1;
+	while (Ress.Food + 10 > Ress.Harvest * 5) { //+10 de la peche
+		//cptHunt--;
+		Ress.Harvest++;
+		Ress.Treecut++;
+		for (int i = 14;i > 0;i--) {
+			for (int j = 20;j < 27;j++) {
+				if (Grid[i][j].Object == EMPTY_CASE) {
+					if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
+						Grid[i][j].Object = FIELD;
+						Grid[i][j].State = SDL_GetTicks() + 2000;
+						i = 0;
+						j = 30;
+					}
+				}
+			}
+		}
+	}
 }
 
 void BuildHospi() {
 	int found = 0;
 	while (!found) {
-		int Rcase = rand() % 900;
+		int Rcase = rand() % (LMAP*HMAP);
 		int CaseI = Rcase % LMAP;
 		int CaseJ = Rcase / LMAP;
 		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
@@ -368,6 +407,7 @@ void BuildHospi() {
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = HOSPI;
+				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
 	}
@@ -375,7 +415,7 @@ void BuildHospi() {
 void BuildFireStation() {
 	int found = 0;
 	while (!found) {
-		int Rcase = rand() % 900;
+		int Rcase = rand() % (LMAP*HMAP);
 		int CaseI = Rcase % LMAP;
 		int CaseJ = Rcase / LMAP;
 		if (Grid[CaseI][CaseJ].Object == EMPTY_CASE || (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State == 4)) {
@@ -383,6 +423,7 @@ void BuildFireStation() {
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = FIRESTATION;
+				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
 	}
@@ -394,26 +435,6 @@ void BuildSecourist() {
 	Grid[1][15].Object = SECOURIST;
 }
 
-void BuildFields() {
-	//int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
-	//Ress.Fish = 1;
-	while (Ress.Food + 10 > Ress.Harvest * 5) {
-		//cptHunt--;
-		Ress.Harvest++;
-		Ress.Treecut++;
-		for (int i = 14;i > 0;i--) {
-			for (int j = 20;j < 27;j++) {
-				if (Grid[i][j].Object == EMPTY_CASE) {
-					if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
-						Grid[i][j].Object = FIELD;
-						i = 0;
-						j = 30;
-					}
-				}
-			}
-		}
-	}
-}
 
 static inline void TribalEra() {
 	Ress.Pop++;
@@ -498,22 +519,7 @@ void ContemporaryEra() {
 	if (Ress.Trees < 50)
 		Ress.Treecut = 0;//collective consciousness
 	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
-		//Build Appart
-		Ress.Apparts++;
-		Ress.Treecut += 10;
-		found = 0;
-		while (!found) {
-			int Rcase = rand() % 900;
-			int CaseI = Rcase % 30;
-			int CaseJ = Rcase / 30;
-			if (Grid[CaseI][CaseJ].Object == EMPTY_CASE) {
-				//check near house
-				if (IsNearHouse(CaseI, CaseJ)) {
-					found = 1;
-					Grid[CaseI][CaseJ].Object = APPART;
-				}
-			}
-		}
+		BuildAppart();
 	}
 	RemoveRandomTrees();
 }
@@ -523,7 +529,7 @@ void NoAction() {}
 void Plant() {
 	if (fire > 0)
 		return;
-	int nbTreesAdded = 2;
+	int nbTreesAdded = 2+2*era;
 	int Rtree = rand() % (FOREST_H * FOREST_W + 1); //random tree
 	int i = Rtree % FOREST_W; //10col for 10line
 	int j = Rtree / FOREST_W;
@@ -628,6 +634,7 @@ void Rain() {
 		
 		riverDryness = 0;
 		rain = 1;
+		SetAsAction(PLANT);
 	}
 }
 
@@ -658,7 +665,7 @@ void Devour() {
 void Drown() {
 	// @TODO: commencer à une case random pour être moins linéaire ?
 	for (int i = 0; i < LMAP; ++i) {
-		for (int j = 0; j < HMAP; ++j) {
+		for (int j = 27; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
 				Grid[i][j].Object = SEA;
 				return;
