@@ -17,7 +17,7 @@ struct sTree {
 void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
     //can write one line
-    SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
+    SDL_Surface* HudRessS = TTF_RenderText_Solid(ft, chaine, color);
     SDL_Texture* HudRessT = SDL_CreateTextureFromSurface(Renderer, HudRessS);
     SDL_Rect posT = { posft.x,posft.y,HudRessS->w,HudRessS->h };
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
@@ -99,7 +99,8 @@ void Afficher() {
     static SDL_Texture* SnowT[80];
     static SDL_Texture* FireT[6];
     static SDL_Texture* BuildingT;
-    static SDL_Texture* FondNoirT;
+    static SDL_Texture* BlackBgT;
+    static SDL_Texture* BlueFilterT;
     static SDL_Texture* FrameT[4];
     static SDL_Texture* SpeedT[2];
 
@@ -161,8 +162,11 @@ void Afficher() {
         sprintf(buff1, "Assets/Tiles/construction.png");
         BuildingT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/UI/FondNoir.png");
-        FondNoirT = IMG_LoadTexture(Renderer, buff1);
-        Year = 0; //Game Starts here
+        BlackBgT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/UI/BlueFilter.png");
+        BlueFilterT = IMG_LoadTexture(Renderer, buff1);
+        Year = 1; //Game Starts here
+        timegame = SDL_GetTicks();
 
     }
 
@@ -200,34 +204,35 @@ void Afficher() {
     if (1) { //refaire
         //Render Tiles one by one
         //Tiles
-        SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png"); //delete test
+        //SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png"); //delete test
         //i et j sont inversés à l'affichage à cause de l'isometrie
         //reverse i and j for isometric
         for (i = 0;i < LMAP;i++) {
             for (j = 0;j < HMAP;j++) {
-                QueryText(CaseT, &wText, &hText);
+                //QueryText(CaseT, &wText, &hText);
                 SDL_Point ObjectP = { i * wText / 2  ,j * hText };
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
                 SDL_Rect posObject = { ObjectIsoP.x - posxy.x - 300 * Zoom,ObjectIsoP.y - posxy.y,wText,hText };
-                //SDL_Rect posObjectB = { ObjectP.x,ObjectP.y,wText,hText };
                 if (Grid[j][i].Object == MOUNTAIN) {
-                    SDL_SetTextureColorMod(CaseT, 152, 57, 0);
+                    //SDL_SetTextureColorMod(CaseT, 152, 57, 0);
                 }
                 else if (Grid[j][i].Object == RIVER) {
-                    SDL_SetTextureColorMod(CaseT, 100, 100, 250);
+                    //SDL_SetTextureColorMod(CaseT, 100, 100, 250);
                     /*wText = arrond(CaseL.x * Zoom*1.8);
                     hText = arrond(CaseL.y * Zoom*1.8);
                     SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText / 2,wText,hText };
                     SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);*/
                 }
                 else if (Grid[j][i].Object == SEA) {
-                    SDL_SetTextureColorMod(CaseT, 30, 0, 200);
+                    //SDL_SetTextureColorMod(CaseT, 30, 0, 200);
                 }
                 else if (Grid[j][i].Object == FOREST) {
-                    if (Grid[j][i].State == 4)
-                        SDL_SetTextureColorMod(CaseT, 100, 150, 100);
-                    else
-                        SDL_SetTextureColorMod(CaseT, 100, 255, 100);
+                    if (Grid[j][i].State == 4) {
+                        //SDL_SetTextureColorMod(CaseT, 100, 150, 100);
+                    }
+                    else {
+                        //SDL_SetTextureColorMod(CaseT, 100, 255, 100);
+                    }
                     if (Grid[j][i].State > 4) { //fire
                         static int cptFire = 0;
                         static int timerFire = SDL_GetTicks() + 83;
@@ -331,21 +336,13 @@ void Afficher() {
                     }
                 }
                 else if (Grid[j][i].Object == HUT) {
-                    SDL_SetTextureColorMod(CaseT, 255, 153, 255);
-                    if (Grid[j][i].State > SDL_GetTicks()) {
-                        //Building
-                        QueryText4(BuildingT, &wText, &hText);
-                        SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
+                    //SDL_SetTextureColorMod(CaseT, 255, 153, 255);
 
-                    }
-                    else {
-                        if (Grid[j][i].State < SDL_GetTicks())
-                            Grid[j][i].State = 1;
-                        QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
-                        SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, HouseAT[Grid[j][i].id], NULL, &posHouseA);
-                    }
+                    if (Grid[j][i].State < SDL_GetTicks())
+                        Grid[j][i].State = 1;
+                    QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
+                    SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                    SDL_RenderCopy(Renderer, HouseAT[Grid[j][i].id], NULL, &posHouseA);
                 }
                 else if (Grid[j][i].Object == HOUSE) {
                     if (Grid[j][i].State > SDL_GetTicks()) {
@@ -358,14 +355,14 @@ void Afficher() {
                     else {
                         if (Grid[j][i].State < SDL_GetTicks())
                             Grid[j][i].State = 1;
-                        SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                        //SDL_SetTextureColorMod(CaseT, 204, 0, 204);
                         QueryText4(HouseBT[Grid[j][i].id], &wText, &hText);
                         SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                         SDL_RenderCopy(Renderer, HouseBT[Grid[j][i].id], NULL, &posHouseB);
                     }
                 }
                 else if (Grid[j][i].Object == APPART) {
-                    SDL_SetTextureColorMod(CaseT, 102, 0, 102);
+                    //SDL_SetTextureColorMod(CaseT, 102, 0, 102);
                     QueryText4(HouseCT[Grid[j][i].id], &wText, &hText);
                     SDL_Rect posHouseC = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                     SDL_RenderCopy(Renderer, HouseCT[Grid[j][i].id], NULL, &posHouseC);
@@ -383,7 +380,7 @@ void Afficher() {
                         else {
                             if (Grid[j][i].State < SDL_GetTicks())
                                 Grid[j][i].State = 1;
-                            SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                           // SDL_SetTextureColorMod(CaseT, 230, 153, 0);
                             QueryText4(MillT, &wText, &hText);
                             SDL_Rect posMill = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                             SDL_RenderCopy(Renderer, MillT, NULL, &posMill);
@@ -403,7 +400,7 @@ void Afficher() {
                             int idField = 1;
                             if (Ress.River == 0)
                                 idField = 2;
-                            SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                            //SDL_SetTextureColorMod(CaseT, 255, 255, 153);
                             QueryText4(FieldT[idField], &wText, &hText);
                             SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                             SDL_RenderCopy(Renderer, FieldT[idField], NULL, &posField);
@@ -411,31 +408,31 @@ void Afficher() {
                     }
                 }
                 else if (Grid[j][i].Object == SHIP) {
-                    SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                    //SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                     QueryText4(ShipT, &wText, &hText);
                     SDL_Rect posShip = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                     SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
                 }
                 else if (Grid[j][i].Object == HOSPI) {
-                    SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                    //SDL_SetTextureColorMod(CaseT, 255, 255, 255);
                 }
                 else if (Grid[j][i].Object == FIRESTATION) {
-                    SDL_SetTextureColorMod(CaseT, 255, 0, 0);
+                    //SDL_SetTextureColorMod(CaseT, 255, 0, 0);
                 }
                 else if (Grid[j][i].Object == BARRAGE) {
-                    SDL_SetTextureColorMod(CaseT, 200, 200, 200);
+                    //SDL_SetTextureColorMod(CaseT, 200, 200, 200);
                 }
                 else if (Grid[j][i].Object == SECOURIST) {
-                    SDL_SetTextureColorMod(CaseT, 0, 0, 0);
+                    //SDL_SetTextureColorMod(CaseT, 0, 0, 0);
                 }
                 else {
-                    SDL_SetTextureColorMod(CaseT, 100, 200, 100);
+                    //SDL_SetTextureColorMod(CaseT, 100, 200, 100);
                 }
-                SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
+                //SDL_RenderCopy(Renderer, CaseT, NULL, &posObject);
 
             }
         }
-        SDL_DestroyTexture(CaseT);
+        //SDL_DestroyTexture(CaseT);
     }
     //FX
     if (rain) {
@@ -471,10 +468,9 @@ void Afficher() {
     }
 
     //HUD HAUT
-    
     if (Menu == NONE) {
         SDL_Rect posNoir = { 0,0,ScreenL.x,100 * Menu * Zoom };
-        SDL_RenderCopy(Renderer, FondNoirT, NULL, &posNoir);
+        SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
         for (i = 0;i < ScreenL.x / 60 + 1;i++) {
             SDL_Rect posFrame = { i * 60,0,64,8 };
             SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
@@ -496,7 +492,7 @@ void Afficher() {
     }
     else if (Menu == UIUP) {
         SDL_Rect posNoir = { 0,0,ScreenL.x,100 * Menu * Zoom };
-        SDL_RenderCopy(Renderer, FondNoirT, NULL, &posNoir);
+        SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
         for (i = 0;i < ScreenL.x / 60 + 1;i++) {
             SDL_Rect posFrame = { i * 60,0,64,8 };
             SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
@@ -511,20 +507,16 @@ void Afficher() {
             posFrame.x = ScreenL.x - 8;
             SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame);
         }
-
         sprintf(buff1, "Food  |  Pop=%d Trees=%d Animals=%d  ||  Action=%s [%s]", Ress.Pop, Ress.Trees, Ress.Animals, ActionName(), GetPeriodName());
         SDL_Point posRess = { arrond(1100 * Zoom), arrond(10 * Zoom) };
         TTFrender(buff1, ArialNarrowB32, { 255, 255, 255 }, posRess);
-#pragma warning(suppress : 4996)
         sprintf(buff1, "-%d", Ress.Pop);
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB32, { 255, 150, 150 }, posRess);
-#pragma warning(suppress : 4996)
         sprintf(buff1, "Gathering +5");
         posRess.y += arrond(70 * Zoom);
         TTFrender(buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
         if (Ress.Hunt) {
-#pragma warning(suppress : 4996)
             sprintf(buff1, "Hunt +%d", Ress.Hunt * 10);
             posRess.y += arrond(70 * Zoom);
             TTFrender(buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
@@ -561,10 +553,26 @@ void Afficher() {
     sprintf(buff1, "%s era | Year %d", GetEraName(), Year);
     SDL_Point posYear = { arrond(300 * Zoom), arrond(10 * Zoom) };
     TTFrender(buff1, ArialNarrowB32, { 100, 100, 100 }, posYear);
+    printf("bbb %d\n", SDL_GetTicks());
     for (j = 0; j < 7;j++) {
+        float CDaction = ((SDL_GetTicks() - timegame) % timeTurn) / float(timeTurn);
+        if (j == 1) {
+            if (rain)
+                CDaction = (CDaction + rain - 1) / 7.0;
+            else
+                CDaction = (CDaction + rain) / 7.0;
+            //printf("aaa %d %d %.2f\n",rain, (SDL_GetTicks() - timegame) % timeTurn, CDaction);
+        }
+        else if (j == 2)
+            CDaction = float(Year) / (YEARS_PER_SEASON * 4);
+        else if (j == 3)
+            CDaction = float(Ress.Pop) / ERAMED;
+
+        if (CDaction < 0)
+            CDaction = 0;
         //Actions
         SDL_Rect posNoir = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond(200 * Zoom) };
-        SDL_RenderCopy(Renderer, FondNoirT, NULL, &posNoir);
+        SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
         SDL_Rect posFrame = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),8 };
         SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
         posFrame.y += arrond(200 * Zoom) - 8;
@@ -574,9 +582,16 @@ void Afficher() {
         SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame2);
         posFrame2.x += arrond(200 * Zoom) - 8;
         SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame2);
+        if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && Period!=3) || (j == 3 && era==0)) {
+            //CD
+            SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
+            posBlue.y += arrond(200 * Zoom - posBlue.h);
+            SDL_RenderCopy(Renderer, BlueFilterT, NULL, &posBlue);
+        }
         sprintf(buff1, "%d", j);
         SDL_Point posAction = { arrond(200 * Zoom + j * 220 * Zoom+ posNoir.w/2 -18*Zoom),arrond(1900 * Zoom)+ posNoir.h/2};
         TTFrender(buff1, ArialNarrowB32, { 255, 150, 150 }, posAction);
+        
     }
 
     SDL_RenderPresent(Renderer);

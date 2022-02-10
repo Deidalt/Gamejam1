@@ -39,6 +39,7 @@ extern int triggerCold;
 extern int rain;
 extern int fire;
 extern int timeTurn;
+extern int timegame;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP, FIRESTATION, BARRAGE, SECOURIST, HOSPI} CaseType;
 
@@ -72,7 +73,9 @@ extern Ressources Ress;
 #define FOREST_W 16
 #define FOREST_H 19
 
-#define YEARS_PER_SEASON  30//83
+#define ERAMED 20
+#define ERACONT 100
+#define YEARS_PER_SEASON  10//83
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
