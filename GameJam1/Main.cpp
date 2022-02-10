@@ -563,9 +563,17 @@ void Plant() {
 }
 
 static void FloodCase(int i, int j) {
-	if (IsHabitation(i, j)) {
+	if (IsType(i, j, HUT)) {
 		Grid[i][j].Object = EMPTY_CASE;
 		Ress.Pop -= 1;
+	}
+	else if (IsType(i, j, HOUSE)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		Ress.Pop -= 2;
+	}
+	else if (IsType(i, j, APPART)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		Ress.Pop -= 4;
 	}
 	else if (IsType(i, j, MILL)) {
 		Grid[i][j].Object = EMPTY_CASE;
