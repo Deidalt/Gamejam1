@@ -100,8 +100,8 @@ int main(int argc, char* argv[])
 	Grid[5][10].Object = HUT;
 	Grid[5][10].id = rand() % 4;
 	
-	timegame = SDL_GetTicks();
 	Afficher(); //init game
+	timegame = SDL_GetTicks();
 
 	while (EndMain) {
 		if (Year >= 0 && Menu>=NONE) {
