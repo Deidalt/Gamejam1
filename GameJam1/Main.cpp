@@ -105,8 +105,12 @@ int main(int argc, char* argv[])
 
 	while (EndMain) {
 		if (Year >= 0 && Menu>=NONE) {
-			Year = (SDL_GetTicks() - timegame) / timeTurn; //+1 Year every 2 sec
-
+			PastYear = Year;
+			if ((SDL_GetTicks() - timegame) / timeTurn >= 1) {
+				Year += 1; //+1 Year every 2 sec
+				timegame = SDL_GetTicks();
+			}
+			//printf("aac %d %d %d\n", rain, (SDL_GetTicks() - timegame) % timeTurn, (SDL_GetTicks() - timegame) / timeTurn);
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
 				if(Ress.Animals)
@@ -115,6 +119,7 @@ int main(int argc, char* argv[])
 				
 				// Repeat last action each turn
 				actions[lastAction]();
+				//printf("AAB %d %d %d\n", rain, (SDL_GetTicks() - timegame) % timeTurn, (SDL_GetTicks() - timegame) / timeTurn);
 
 				ManageSeasons();
 				
@@ -130,7 +135,8 @@ int main(int argc, char* argv[])
 				}
 			}
 			
-			PastYear = Year;
+			
+
 		}
 		if (Ress.Trees <= 0) {
 			Ress.Trees = 0;
@@ -176,7 +182,7 @@ static inline void ManageSeasons() {
 	}
 	if (rain != 0) {
 		++rain;
-		if (rain == 7) {
+		if (rain == 8) { // 8 is 7 because rain skip 1
 			rain = 0;
 		}
 	}
@@ -459,11 +465,11 @@ static inline void TribalEra() {
 	Ress.Treecut = 2;
 	RemoveRandomTrees();
 
-	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
+	if (Ress.Pop > Ress.Huts + Ress.Houses*2 + Ress.Apparts*4) {
 		BuildHut();
 	}
 
-	if (Ress.Pop >= 20)
+	if (Ress.Pop >= ERAMED)
 		era = MEDIEVAL;
 }
 
@@ -509,12 +515,12 @@ void MedievalEra() {
 		BuildShip();
 	}
 	
-	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
+	if (Ress.Pop > Ress.Huts + Ress.Houses*2 + Ress.Apparts*4) {
 		BuildHouse();
 	}
 	RemoveRandomTrees();
 
-	if (Ress.Pop >= 100)
+	if (Ress.Pop >= ERACONT)
 		era = CONTEMPORARY;
 }
 
@@ -530,7 +536,7 @@ void ContemporaryEra() {
 	Ress.Treecut = 10;
 	if (Ress.Trees < 50)
 		Ress.Treecut = 0;//collective consciousness
-	if (Ress.Pop > Ress.Huts + Ress.Houses + Ress.Apparts) {
+	if (Ress.Pop > Ress.Huts + Ress.Houses*2 + Ress.Apparts*4) {
 		BuildAppart();
 	}
 	RemoveRandomTrees();

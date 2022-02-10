@@ -18,10 +18,15 @@ void Evenement() {
         }
         case SDL_KEYDOWN: {
             if (eventV.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {//menu
-                if (Menu==ESCAPE)
+                static int timeStop = 0;
+                if (Menu == ESCAPE) {
                     Menu = NONE;
-                else
+                    timegame = SDL_GetTicks() - timeStop;
+                }
+                else {
                     Menu = ESCAPE;
+                    timeStop = SDL_GetTicks() - timegame;
+                }
             }
             else if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
                 LastMove.x = 1;
@@ -54,6 +59,9 @@ void Evenement() {
             }
             else if (eventV.key.keysym.sym == SDLK_5 || eventV.key.keysym.sym == SDLK_KP_5) {
                 SetAsAction(DROWN);
+            }
+            else if (eventV.key.keysym.sym == SDLK_6 || eventV.key.keysym.sym == SDLK_KP_6) {
+                SetAsAction(NO_ACTION);
             }
 
             break;
