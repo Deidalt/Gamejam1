@@ -296,13 +296,13 @@ void Afficher() {
                                 posTree[j][i].init ++;
                             }
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            if (Period < 2) {
+                            if (period < 2) {
                                 SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
                             }
                             else if (triggerCold) {
                                 SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
                             }
-                            else if (Period == 2) {
+                            else if (period == 2) {
                                 SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
                             }
                         }
@@ -311,7 +311,7 @@ void Afficher() {
                         for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
                             QueryText(TreeAT[idtree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            if (Period < 2) {
+                            if (period < 2) {
                                 SDL_SetTextureColorMod(TreeAT[idtree], 255, 10, 50);
                                 SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeAT[idtree], 255, 255, 255);
@@ -321,7 +321,7 @@ void Afficher() {
                                 SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeBT[idtree], 255, 255, 255);
                             }
-                            else if (Period == 2) {
+                            else if (period == 2) {
                                 SDL_SetTextureColorMod(TreeCT[idtree], 255, 10, 50);
                                 SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeCT[idtree], 255, 255, 255);
