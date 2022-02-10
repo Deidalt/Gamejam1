@@ -122,7 +122,7 @@ void Afficher() {
             HouseBT[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Tiles/House/contemporary_house_%d.png", i + 1);
             HouseCT[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Frame%d.png", i);
+            sprintf(buff1, "Assets/UI/Frame%d.png", i);
             FrameT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
@@ -153,14 +153,14 @@ void Afficher() {
             FieldT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 2;i++) {
-            sprintf(buff1, "Assets/Speedup%d.png", i);
+            sprintf(buff1, "Assets/UI/Speedup%d.png", i);
             SpeedT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         sprintf(buff1, "Assets/Tiles/Other/Ship.png");
         ShipT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/Tiles/construction.png");
         BuildingT = IMG_LoadTexture(Renderer, buff1);
-        sprintf(buff1, "Assets/FondNoir.png");
+        sprintf(buff1, "Assets/UI/FondNoir.png");
         FondNoirT = IMG_LoadTexture(Renderer, buff1);
         Year = 0; //Game Starts here
 
