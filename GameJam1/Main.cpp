@@ -29,8 +29,9 @@ int riverDryness = 0;
 int rain = 0; //rain action
 int fire = 0; //fire event
 int hospitalCount = 0;
-int Menu = 0; //1 = Menu IG
+Menus Menu = NONE; 
 int ActionAuto = 0; //if not 0, action is save for when it is possible
+int timeTurn = TIMETURN;
 
 static inline void TribalEra();
 static inline void MedievalEra();
@@ -89,6 +90,8 @@ int main(int argc, char* argv[])
 			else if (initForestLocation(i, j)) {
 				Grid[i][j].Object = FOREST;
 				Grid[i][j].id = rand() % 4;
+				if (Grid[i][j].id == 1)
+					Grid[i][j].id += rand() % 3;
 			}
 		}
 		Grid[i][j].State = 0;
@@ -101,8 +104,8 @@ int main(int argc, char* argv[])
 	Afficher(); //init game
 
 	while (EndMain) {
-		if (Year >= 0 && Menu==0) {
-			Year = (SDL_GetTicks() - timegame) / TIMETURN; //+1 Year every 2 sec
+		if (Year >= 0 && Menu>=NONE) {
+			Year = (SDL_GetTicks() - timegame) / timeTurn; //+1 Year every 2 sec
 
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
@@ -131,7 +134,7 @@ int main(int argc, char* argv[])
 		}
 		if (Ress.Trees <= 0) {
 			Ress.Trees = 0;
-			Menu = 1; //Game Lost
+			Menu = ESCAPE; //Game Lost
 			printf("LOSE\n");
 		}
 		SDL_Delay(1);
@@ -350,6 +353,8 @@ void BuildAppart() {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = APPART;
 				Grid[CaseI][CaseJ].id = rand() % 4;
+				if (Grid[CaseI][CaseJ].id == 1)
+					Grid[CaseI][CaseJ].id = 0;
 				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
@@ -645,7 +650,7 @@ void Rain() {
 		
 		riverDryness = 0;
 		rain = 1;
-		SetAsAction(PLANT);
+		
 	}
 }
 

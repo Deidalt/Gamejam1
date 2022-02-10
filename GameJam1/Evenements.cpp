@@ -18,10 +18,10 @@ void Evenement() {
         }
         case SDL_KEYDOWN: {
             if (eventV.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {//menu
-                if (Menu)
-                    Menu = 0;
+                if (Menu==ESCAPE)
+                    Menu = NONE;
                 else
-                    Menu=1;
+                    Menu = ESCAPE;
             }
             else if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
                 LastMove.x = 1;
@@ -35,6 +35,7 @@ void Evenement() {
             else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
                 LastMove.y = 4;
             }
+            
 
             else if (eventV.key.keysym.sym == SDLK_0 || eventV.key.keysym.sym == SDLK_KP_0) {
                 SetAsAction(PLANT);
@@ -70,7 +71,58 @@ void Evenement() {
             else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
                 LastMove.y = 0;
             }
+            else if (eventV.key.keysym.sym == SDLK_KP_PLUS) {
+                timeTurn = timeTurn / 2;
+                if (timeTurn < 250)
+                    timeTurn = 250;
+            }
+            else if (eventV.key.keysym.sym == SDLK_KP_MINUS) {
+                timeTurn = timeTurn * 2;
+                if (timeTurn > 2000)
+                    timeTurn = 2000;
+            }
             break;
+        }
+        case SDL_MOUSEBUTTONDOWN: {
+            if (eventV.button.button == SDL_BUTTON_LEFT) {
+                if (Menu == ESCAPE) {
+
+                }
+                else {
+                    if (eventV.button.y < 100 * Zoom && eventV.button.x < 270 * Zoom) {
+                        if (eventV.button.x < 100 * Zoom) {
+                            //Speeddown
+                            timeTurn = timeTurn * 2;
+                            if (timeTurn > 2000)
+                                timeTurn = 2000;
+                        }
+                        else if (eventV.button.x > 190 * Zoom) {
+                            //Speeddown
+                            timeTurn = timeTurn / 2;
+                            if (timeTurn < 250)
+                                timeTurn = 250;
+                        }
+                    }
+                    else if (eventV.button.y > 1900 * Zoom && eventV.button.y < 2100 * Zoom) {
+                        for (int i = 0;i < 7;i++) {
+                            if (eventV.button.x > 200 * Zoom + i * 220 * Zoom && eventV.button.x < 400 * Zoom + i * 220 * Zoom) {
+                                SetAsAction(Actions(i));
+                                break;
+                            }
+                        }
+                    }
+                    else if (Menu == NONE) {
+                        if (eventV.button.y < 100 * Zoom) {
+                            Menu = UIUP;
+                        }
+                    }
+                    else if (Menu == UIUP) {
+                        if (eventV.button.y < 300 * Zoom) {
+                            Menu = NONE;
+                        }
+                    }
+                }
+            }
         }
         default:
             break;
@@ -84,4 +136,12 @@ void Evenement() {
         posxy.y += arrond(LCASE * Zoom);
     else if (LastMove.y == 4)
         posxy.y -= arrond(LCASE * Zoom);
+    if (posxy.y > 2000 * Zoom)
+        posxy.y = 2000 * Zoom;
+    if (posxy.x > 3000 * Zoom)
+        posxy.x = 3000 * Zoom;
+    if (posxy.x < -2000 * Zoom)
+        posxy.x = -2000 * Zoom;
+    if (posxy.y < -2000 * Zoom)
+        posxy.y = -2000 * Zoom;
 }

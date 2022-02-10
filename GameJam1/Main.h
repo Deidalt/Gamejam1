@@ -35,10 +35,10 @@ extern float Zoom2K;
 extern SDL_Point ScreenL;
 extern int Revenge;
 extern int Year;
-extern int Menu;
 extern int triggerCold;
 extern int rain;
 extern int fire;
+extern int timeTurn;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP, FIRESTATION, BARRAGE, SECOURIST, HOSPI} CaseType;
 
@@ -76,6 +76,8 @@ extern Ressources Ress;
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
+enum Menus { ESCAPE, NONE, NONEA,NONEB, UIUP};
+extern Menus Menu;
 
 void SetAsAction(Actions action);
 Actions getCurrentAction();
