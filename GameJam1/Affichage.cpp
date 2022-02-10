@@ -17,7 +17,7 @@ struct sTree {
 void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
     //can write one line
-    SDL_Surface* HudRessS = TTF_RenderText_Solid(ft, chaine, color);
+    SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
     SDL_Texture* HudRessT = SDL_CreateTextureFromSurface(Renderer, HudRessS);
     SDL_Rect posT = { posft.x,posft.y,HudRessS->w,HudRessS->h };
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
@@ -588,7 +588,7 @@ void Afficher() {
         SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame2);
         posFrame2.x += arrond(200 * Zoom) - 8;
         SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame2);
-        if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && Period!=3) || (j == 3 && era==0)) {
+        if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && period!=3) || (j == 3 && era==0)) {
             //CD
             SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
             posBlue.y += arrond(200 * Zoom - posBlue.h);
