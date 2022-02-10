@@ -31,6 +31,7 @@ enum Eras { TRIBAL, MEDIEVAL, CONTEMPORARY };
 extern Eras era;
 extern float Zoom;
 extern float Zoom7K;
+extern float Zoom2K;
 extern SDL_Point ScreenL;
 extern int Revenge;
 extern int Year;
@@ -39,7 +40,7 @@ extern int triggerCold;
 extern int rain;
 extern int fire;
 
-typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP } CaseType;
+typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP, FIRESTATION, BARRAGE, SECOURIST, HOSPI} CaseType;
 
 struct Case {
 	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Ship
@@ -69,7 +70,7 @@ extern Ressources Ress;
 #define FOREST_W 16
 #define FOREST_H 19
 
-#define YEARS_PER_SEASON  30//83
+#define YEARS_PER_SEASON  10//83
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
@@ -79,6 +80,7 @@ Actions getCurrentAction();
 
 bool IsColdOn();
 int GetSickNumber();
+const char* GetPeriodName();
 const char* GetEraName();
 
 bool IsGlacialSeason();
