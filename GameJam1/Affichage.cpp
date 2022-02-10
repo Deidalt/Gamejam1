@@ -27,7 +27,7 @@ void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posf
 
 void InitAffichage() {
     //Libs init
-    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED/*   | SDL_WINDOW_ALLOW_HIGHDPI*/);
+    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP/*   | SDL_WINDOW_ALLOW_HIGHDPI*/);
     if (Screen == NULL)
         printf("NULL Window\n");
     Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
@@ -92,6 +92,7 @@ void Afficher() {
     static SDL_Texture* TreeCT[4];
     static SDL_Texture* HouseAT[4];
     static SDL_Texture* HouseBT[4];
+    static SDL_Texture* HouseCT[4];
     static SDL_Texture* MillT;
     static SDL_Texture* FieldT[3];
     static SDL_Texture* ShipT;
@@ -99,6 +100,9 @@ void Afficher() {
     static SDL_Texture* RainT[7];
     static SDL_Texture* SnowT[80];
     static SDL_Texture* FireT[6];
+    static SDL_Texture* BuildingT;
+    static SDL_Texture* FondNoirT;
+    static SDL_Texture* FrameT[4];
 
     if (Initialised == 0) {
         //Vars init
@@ -117,6 +121,10 @@ void Afficher() {
             HouseAT[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Tiles/House/medieval_house_%d.png", i + 1);
             HouseBT[i] = IMG_LoadTexture(Renderer, buff1);
+            sprintf(buff1, "Assets/Tiles/House/contemporary_house_%d.png", i + 1);
+            HouseCT[i] = IMG_LoadTexture(Renderer, buff1);
+            sprintf(buff1, "Assets/Frame%d.png", i);
+            FrameT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
 
@@ -148,6 +156,10 @@ void Afficher() {
         }
         sprintf(buff1, "Assets/Tiles/Other/Ship.png");
         ShipT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/construction.png");
+        BuildingT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/FondNoir.png");
+        FondNoirT = IMG_LoadTexture(Renderer, buff1);
         Year = 0; //Game Starts here
 
     }
@@ -236,91 +248,165 @@ void Afficher() {
                         SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                         SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
                     }
+                    int idtree = Grid[j][i].id;
                     if (Grid[j][i].State < 4) {
                         for (int arb = 0; arb < 4 - Grid[j][i].State%5; arb++) {
-                            //Mapping des arbres RandTree à set en static
-                            int randTree = 0; //rand à faire
-                            //int randTree = j % 3;
-                            QueryText(TreeAT[randTree], &wText, &hText);
+                            QueryText(TreeAT[Grid[j][i].id], &wText, &hText);
                             //init positions of each tree randomly in his case
+                            
                             if (posTree[j][i].init < 4) { 
                                 if (arb == 0) {
                                     posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x);
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText - arrond(Zoom * CaseL.y / 2);
+                                    idtree = Grid[j - 1][i].id;
                                 }
                                 else if (arb == 1) {
                                     posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x / 2);
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText;
+                                    idtree = Grid[j + 1][i].id;
                                 }
                                 else if (arb == 2) {
                                     posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x * 1.5);
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText;
+                                    idtree = Grid[j][i+1].id;
                                 }
                                 else if (arb == 3) {
                                     posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom)  + arrond(Zoom * CaseL.x);
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom)  - hText + arrond(Zoom * CaseL.y / 2);
+                                    idtree = Grid[j][i-1].id;
                                 }
-                                if (randTree == 0) {
+                                if (idtree == 0) {
                                     posTree[j][i].posArb[arb].x -= arrond((45 + rand() % 40) * Zoom7K);
                                     posTree[j][i].posArb[arb].y += arrond((55 + rand() % 40) * Zoom7K);
                                 }
-                                if (randTree == 1) {
-                                    posTree[j][i].posArb[arb].x -= arrond(165 * Zoom);
-                                    posTree[j][i].posArb[arb].y -= arrond(135 * Zoom);
+                                else if (idtree == 1) {
+                                   // posTree[j][i].posArb[arb].x -= arrond((110 + rand() % 40) * Zoom7K);
+                                    //posTree[j][i].posArb[arb].y += arrond((21 + rand() % 40) * Zoom7K);
+                                    posTree[j][i].posArb[arb].x -= arrond((140 + rand() % 40) * Zoom7K);
+                                    posTree[j][i].posArb[arb].y += arrond((95 + rand() % 40) * Zoom7K);
                                 }
-                                if (randTree == 2) {
-                                    posTree[j][i].posArb[arb].x -= arrond(215 * Zoom);
-                                    posTree[j][i].posArb[arb].y -= arrond(167 * Zoom);
+                                else if (idtree == 2) {
+                                    posTree[j][i].posArb[arb].x -= arrond((180 + rand() % 40) * Zoom7K);
+                                    posTree[j][i].posArb[arb].y += arrond((50 + rand() % 40) * Zoom7K);
+                                }
+                                else if (idtree == 3) {
+                                    posTree[j][i].posArb[arb].x -= arrond((110 + rand() % 40) * Zoom7K);
+                                    posTree[j][i].posArb[arb].y += arrond((21 + rand() % 40) * Zoom7K);
                                 }
                                 posTree[j][i].init ++;
                             }
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posFinal);
+                            if (Period < 2) {
+                                SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
+                            }
+                            else if (triggerCold) {
+                                SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
+                            }
+                            else if (Period == 2) {
+                                SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
+                            }
                         }
                     }
                     else if (Grid[j][i].State > 4) {
                         for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
-                            int randTree = 0; //rand à faire
-                            QueryText(TreeAT[randTree], &wText, &hText);
+                            QueryText(TreeAT[idtree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            SDL_SetTextureColorMod(TreeAT[randTree],255,10,50);
-                            SDL_RenderCopy(Renderer, TreeAT[randTree], NULL, &posFinal);
-                            SDL_SetTextureColorMod(TreeAT[randTree], 255, 255, 255);
+                            if (Period < 2) {
+                                SDL_SetTextureColorMod(TreeAT[idtree], 255, 10, 50);
+                                SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
+                                SDL_SetTextureColorMod(TreeAT[idtree], 255, 255, 255);
+                            }
+                            else if (triggerCold) {
+                                SDL_SetTextureColorMod(TreeBT[idtree], 255, 10, 50);
+                                SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
+                                SDL_SetTextureColorMod(TreeBT[idtree], 255, 255, 255);
+                            }
+                            else if (Period == 2) {
+                                SDL_SetTextureColorMod(TreeCT[idtree], 255, 10, 50);
+                                SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
+                                SDL_SetTextureColorMod(TreeCT[idtree], 255, 255, 255);
+                            }
                         }
                     }
                 }
                 else if (Grid[j][i].Object == HUT) {
                     SDL_SetTextureColorMod(CaseT, 255, 153, 255);
-                    int randHouse = 0; //rand à faire
-                    QueryText(HouseAT[randHouse], &wText, &hText);
-                    SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                    SDL_RenderCopy(Renderer, HouseAT[randHouse], NULL, &posHouseA);
+                    if (Grid[j][i].State > SDL_GetTicks()) {
+                        //Building
+                        QueryText4(BuildingT, &wText, &hText);
+                        SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
 
-                }
-                else if (Grid[j][i].Object == HOUSE) {
-                    SDL_SetTextureColorMod(CaseT, 204, 0, 204);
-                    int randHouse = 0; //rand à faire
-                    QueryText4(HouseBT[randHouse], &wText, &hText);
-                    SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                    SDL_RenderCopy(Renderer, HouseBT[randHouse], NULL, &posHouseB);
-                }
-                else if (Grid[j][i].Object == APPART)
-                    SDL_SetTextureColorMod(CaseT, 102, 0, 102);
-                else if (Grid[j][i].Object == FIELD) {
-                    if (i == 20 && j == 13) {
-                        SDL_SetTextureColorMod(CaseT, 230, 153, 0);
-                        QueryText4(MillT, &wText, &hText);
-                        SDL_Rect posMill = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, MillT, NULL, &posMill);
                     }
                     else {
-                        int idField = 1;
-                        if (Ress.River == 0)
-                            idField = 2;
-                        SDL_SetTextureColorMod(CaseT, 255, 255, 153);
-                        QueryText4(FieldT[idField], &wText, &hText);
-                        SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, FieldT[idField], NULL, &posField);
+                        if (Grid[j][i].State < SDL_GetTicks())
+                            Grid[j][i].State = 1;
+                        QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
+                        SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, HouseAT[Grid[j][i].id], NULL, &posHouseA);
+                    }
+                }
+                else if (Grid[j][i].Object == HOUSE) {
+                    if (Grid[j][i].State > SDL_GetTicks()) {
+                        //Building
+                        QueryText4(BuildingT, &wText, &hText);
+                        SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
+
+                    }
+                    else {
+                        if (Grid[j][i].State < SDL_GetTicks())
+                            Grid[j][i].State = 1;
+                        SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                        QueryText4(HouseBT[Grid[j][i].id], &wText, &hText);
+                        SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, HouseBT[Grid[j][i].id], NULL, &posHouseB);
+                    }
+                }
+                else if (Grid[j][i].Object == APPART) {
+                    SDL_SetTextureColorMod(CaseT, 102, 0, 102);
+                    QueryText4(HouseCT[Grid[j][i].id], &wText, &hText);
+                    SDL_Rect posHouseC = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                    SDL_RenderCopy(Renderer, HouseCT[Grid[j][i].id], NULL, &posHouseC);
+                }
+                
+                else if (Grid[j][i].Object == FIELD) {
+                    if (i == 20 && j == 13) {
+                        if (Grid[j][i].State > SDL_GetTicks()) {
+                            //Building
+                            QueryText4(BuildingT, &wText, &hText);
+                            SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
+
+                        }
+                        else {
+                            if (Grid[j][i].State < SDL_GetTicks())
+                                Grid[j][i].State = 1;
+                            SDL_SetTextureColorMod(CaseT, 230, 153, 0);
+                            QueryText4(MillT, &wText, &hText);
+                            SDL_Rect posMill = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, MillT, NULL, &posMill);
+                        }
+                    }
+                    else {
+                        if (Grid[j][i].State > SDL_GetTicks()) {
+                            //Building field
+                            QueryText4(FieldT[0], &wText, &hText);
+                            SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, FieldT[0], NULL, &posField);
+
+                        }
+                        else {
+                            if (Grid[j][i].State < SDL_GetTicks())
+                                Grid[j][i].State = 1;
+                            int idField = 1;
+                            if (Ress.River == 0)
+                                idField = 2;
+                            SDL_SetTextureColorMod(CaseT, 255, 255, 153);
+                            QueryText4(FieldT[idField], &wText, &hText);
+                            SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, FieldT[idField], NULL, &posField);
+                        }
                     }
                 }
                 else if (Grid[j][i].Object == SHIP) {
@@ -384,6 +470,22 @@ void Afficher() {
     }
 
     //HUD HAUT
+    SDL_Rect posNoir = { 0,0,ScreenL.x,400*Zoom };
+    SDL_RenderCopy(Renderer, FondNoirT, NULL, &posNoir);
+    for (i = 0;i < ScreenL.x / 60+1;i++) {
+        SDL_Rect posFrame = { i*60,0,64,8 };
+        SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
+        posFrame.y = arrond(400 * Zoom)-8;
+        SDL_RenderCopy(Renderer, FrameT[1], NULL, &posFrame);
+    }
+    for (i = 0;i < arrond(400*Zoom) / 60+1;i++) {
+        SDL_Rect posFrame = { 0,i*60,8,64 };
+        if (posFrame.y + posFrame.h > 400 * Zoom)
+            posFrame.y = 400 * Zoom - 64;
+        SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame);
+        posFrame.x = ScreenL.x-8;
+        SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame);
+    }
 
     sprintf(buff1, "%s era | Year %d", GetEraName(),Year);
     SDL_Point posYear = { arrond(20 * Zoom), arrond(50 * Zoom) };

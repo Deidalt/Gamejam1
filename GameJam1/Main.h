@@ -20,7 +20,7 @@
 #define H2K 1080
 #define LCASE 95 //164
 #define HCASE 48 //83
-#define TIMETURN 1000 //2000
+#define TIMETURN 2000 //2000
 
 extern SDL_Window* Screen;
 extern int EndMain;
@@ -46,6 +46,8 @@ struct Case {
 	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Ship
 	int State; //0= Building, 1=Built, 2=Destroyed ; 
 	//State for trees : 0-4 number of tree destroyed, 5 on fire
+	//>10 = building time
+	int id; //4 assets différents
 };
 extern Case Grid[LMAP][HMAP];
 
@@ -70,7 +72,7 @@ extern Ressources Ress;
 #define FOREST_W 16
 #define FOREST_H 19
 
-#define YEARS_PER_SEASON  10//83
+#define YEARS_PER_SEASON  30//83
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
