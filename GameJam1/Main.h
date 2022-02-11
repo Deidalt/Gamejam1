@@ -81,7 +81,7 @@ extern Ressources Ress;
 #define ERAMED 20
 #define ERACONT 100
 #define YEARS_PER_SEASON  30//30
-#define YEARMAX 1000//1000
+#define YEARMAX 500//1000
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
