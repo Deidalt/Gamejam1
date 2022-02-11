@@ -58,7 +58,7 @@ int TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft
 
 void InitAffichage() {
     //Libs init
-    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED); //SDL_WINDOW_FULLSCREEN_DESKTOP
+    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP); //SDL_WINDOW_FULLSCREEN_DESKTOP
     if (Screen == NULL)
         printf("NULL Window\n");
     Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
@@ -455,10 +455,9 @@ void Afficher() {
                     }
                 }
                 else if (Grid[j][i].Object == HUT) {
-                    //SDL_SetTextureColorMod(CaseT, 255, 153, 255);
                     if (Grid[j][i].State < 0) {
                         if (fabsf(Grid[j][i].State) > SDL_GetTicks()) {
-                            //fire
+                            //destroyed
                             if (timerFire < SDL_GetTicks()) {
                                 cptFire++;
                                 if (cptFire > 5)
@@ -488,7 +487,7 @@ void Afficher() {
                 else if (Grid[j][i].Object == HOUSE) {
                     if (Grid[j][i].State < 0) {
                         if (fabsf(Grid[j][i].State) > SDL_GetTicks()) {
-                            //fire
+                            //destroyed
                             if (timerFire < SDL_GetTicks()) {
                                 cptFire++;
                                 if (cptFire > 5)
@@ -661,15 +660,12 @@ void Afficher() {
     }
     if (lastAction == METEOR) {
         int CDMeteor = (SDL_GetTicks() - timegame) % timeTurn ;
-        //SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
-        printf("bbc %d\n", CDMeteor);
         QueryText4(MeteorT, &wText, &hText);
-        SDL_Rect posMeteor = { arrond((meteor%LMAP)*CaseL.x*Zoom - posxy.x),0 + 2 * CDMeteor,wText,hText };
+        SDL_Rect posMeteor = { arrond((CaseL.x * (LMAP - (meteor / HMAP)) + CaseL.x * (meteor % LMAP)) * Zoom - posxy.x - wText / 2),
+            arrond((OMAPY + (CaseL.y * (meteor / HMAP + 1)) - (CaseL.y * (LMAP - meteor % LMAP - 1))) * Zoom) - posxy.y + (-timeTurn + CDMeteor) - hText,wText,hText };
         SDL_RenderCopy(Renderer, MeteorT, NULL, &posMeteor);
     }
 
-    
-    
 
     //HUD MENU & UPSCREEN
     if (Menu == ESCAPE) {

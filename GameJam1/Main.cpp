@@ -149,11 +149,9 @@ int main(int argc, char* argv[])
 		}
 		if (Ress.Trees <= 0) {
 			Menu = ESCAPE; //Game Lost
-			printf("LOSE1\n");
 		}
 		else if (Ress.Pop <= 0) {
 			Menu = ESCAPE;
-			printf("LOSE2\n");
 		}
 		else if (Year >= YEARMAX) {
 			Menu = ESCAPE;
@@ -617,7 +615,7 @@ void NoAction() {}
 void Plant() {
 	if (fire > 0)
 		return;
-	int nbTreesAdded = 2+4*era;
+	int nbTreesAdded = 2+5*era;
 	int Rtree = rand() % (FOREST_H * FOREST_W + 1); //random tree
 	int i = Rtree % FOREST_W; //10col for 10line
 	int j = Rtree / FOREST_W;
@@ -779,10 +777,8 @@ void Cold() {
 }
 
 void Meteor() {
-	int Rcase = rand() % (LMAP * HMAP);
-	int CaseI = Rcase % LMAP;
-	int CaseJ = Rcase / LMAP;
-	meteor = CaseJ*HMAP + CaseI;
+	int CaseI = meteor % LMAP;
+	int CaseJ = meteor / LMAP;
 	if (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State < 4) {
 		Ress.Trees -= 4 - Grid[CaseI][CaseJ].State;
 		Grid[CaseI][CaseJ].State += 5;
@@ -798,7 +794,8 @@ void Meteor() {
 			Grid[CaseI][j].State = -int(SDL_GetTicks()+2000);
 		}	
 	}
-	
+	meteor = rand() % (LMAP * HMAP);
+
 }
 
 void Devour() {
@@ -832,7 +829,9 @@ void SetAsAction(Actions action) {
 	else if (rain > 0) {
 		//return; // No actions possible during the rain
 	}
-
+	if (action == METEOR) {
+		meteor = rand() % (LMAP * HMAP);
+	}
 	lastAction = action;
 }
 
