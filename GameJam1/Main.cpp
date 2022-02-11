@@ -88,10 +88,11 @@ int main(int argc, char* argv[])
 	{
 		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 	}
+	Mix_VolumeMusic(8);
 	initGame();
 	
 	Afficher(); //init game
-	/*gMusic = Mix_LoadMUS("Sound/indie 7F.wav");
+	gMusic = Mix_LoadMUS("Sound/Music.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
@@ -100,7 +101,7 @@ int main(int argc, char* argv[])
 	{
 		//Play the music
 		Mix_PlayMusic(gMusic, -1);
-	}*/
+	}
 	timegame = SDL_GetTicks();
 
 	while (EndMain) {
@@ -295,6 +296,8 @@ static bool IsType(int i, int j, CaseType type) {
 static bool IsHabitation(int i, int j) {
 	if (0 <= i && i < LMAP && 0 <= j && j < HMAP) {
 		const CaseType caseType = Grid[i][j].Object;
+		if(era==CONTEMPORARY)
+			return caseType == HUT || caseType == HOUSE || caseType == APPART || caseType == RIVER;
 		return caseType == HUT || caseType == HOUSE || caseType == APPART;
 	}
 
@@ -329,7 +332,6 @@ static inline void BuildHut() {
 		int Rcase = rand() % (LMAP*HMAP);
 		int i = Rcase % 30;
 		int j = Rcase / 30;
-
 		if (Grid[i][j].Object == EMPTY_CASE || (Grid[i][j].Object == FOREST && Grid[i][j].State == 4)) {
 			//check near house
 			if (IsNearHouse(i, j)) {
@@ -411,10 +413,30 @@ void BuildMill() {
 
 void BuildFields() {
 	//harvest
-	while (Ress.Food + 10 > Ress.Harvest * 5) { //+10 de la peche
+	while (Ress.Food + 10 > Ress.Harvest * 10) { //+10 de la peche
 		//cptHunt--;
 		Ress.Harvest++;
 		Ress.Treecut++;
+		if (era == CONTEMPORARY) {
+			for (int i = 28;i > 0;i--) {
+				for (int j = 10;j < 24;j++) {
+					if (Grid[i][j].Object == EMPTY_CASE) {
+						if (Grid[i + 1][j].Object == RIVER || Grid[i - 1][j].Object == RIVER || Grid[i][j - 1].Object == RIVER || Grid[i][j + 1].Object == RIVER) {
+							Grid[i][j].Object = FIELD;
+							Grid[i][j].State = SDL_GetTicks() + 2000;
+							i = 0;
+							j = 30;
+						}
+						else if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
+							Grid[i][j].Object = FIELD;
+							Grid[i][j].State = SDL_GetTicks() + 2000;
+							i = 0;
+							j = 30;
+						}
+					}
+				}
+			}
+		}
 		for (int i = 14;i > 0;i--) {
 			for (int j = 18;j < 24;j++) {
 				if (Grid[i][j].Object == EMPTY_CASE) {
@@ -512,7 +534,7 @@ void MedievalEra() {
 		}
 		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse
 			//Harvest
-			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
+			Ress.Food -= (int)(Ress.Harvest * 10 * GetFieldProductivity());
 		}
 		while (Ress.Food > 0 && Ress.Animals > 0 && Revenge==0) {
 			Hunt();
@@ -554,6 +576,8 @@ void ContemporaryEra() {
 	Ress.Pop += 4;
 	int found = 0;
 	Ress.Treecut = 4;
+	if (Ress.Trees < 100)
+		Ress.Treecut -= 4;//collective consciousness
 	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
 	Ress.Food -= 5;
 	if (Ress.River) { //works while flood
@@ -571,7 +595,7 @@ void ContemporaryEra() {
 		}
 		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse
 			//Harvest
-			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
+			Ress.Food -= (int)(Ress.Harvest * 10 * GetFieldProductivity());
 		}
 		while (Ress.Food > 0 && Ress.Animals > 0) {
 			Hunt();
@@ -585,8 +609,7 @@ void ContemporaryEra() {
 	} //end Ress.Food
 
 
-	if (Ress.Trees < 50)
-		Ress.Treecut = 0;//collective consciousness
+
 	if (Ress.Pop > Ress.Huts + Ress.Houses*2 + Ress.Apparts*4) {
 		BuildAppart();
 	}
@@ -789,12 +812,12 @@ void Meteor() {
 		fire++;
 	}
 	for (int i = CaseI - 1;i < CaseI + 2;i++) {
-		if (Grid[i][CaseJ].Object == HUT || Grid[i][CaseJ].Object == HOUSE || Grid[i][CaseJ].Object == APPART) {
+		if (Grid[i][CaseJ].Object == HUT || Grid[i][CaseJ].Object == HOUSE || Grid[i][CaseJ].Object == APPART || Grid[i][CaseJ].Object == FIELD) {
 			Grid[i][CaseJ].State = -int(SDL_GetTicks()+2000);
 		}	
 	}
 	for (int j = CaseJ - 1;j < CaseJ + 2;j++) {
-		if (Grid[CaseI][j].Object == HUT || Grid[CaseI][j].Object == HOUSE || Grid[CaseI][j].Object == APPART) {
+		if (Grid[CaseI][j].Object == HUT || Grid[CaseI][j].Object == HOUSE || Grid[CaseI][j].Object == APPART || Grid[CaseI][j].Object == FIELD) {
 			Grid[CaseI][j].State = -int(SDL_GetTicks()+2000);
 		}	
 	}
@@ -870,13 +893,18 @@ void initGame() {
 	Ress.Pop = 1;
 	Ress.Trees = 0;
 	triggerCold = 0;
+	Ress.Huts = 1;
+	Ress.Houses = 0;
+	Ress.Apparts = 0;
 	rain = 0;
+	fire = 0;
 	era = TRIBAL;
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
 
 	for (i = 0; i < LMAP; i++) { //Init Grille //init map
 		for (j = 0; j < HMAP; j++) {
 			Grid[i][j].Object = EMPTY_CASE;
+			Grid[i][j].State = 0;
 			if (j < 3)
 				Grid[i][j].Object = MOUNTAIN;
 			else if (IsSeaLocation(i, j))
@@ -890,7 +918,6 @@ void initGame() {
 					Grid[i][j].id += rand() % 3;
 			}
 		}
-		Grid[i][j].State = 0;
 	}
 	SDL_FreeSurface(HitboxRiverS);
 	Grid[5][10].Object = HUT;
