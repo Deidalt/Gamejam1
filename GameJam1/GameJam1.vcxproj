@@ -95,7 +95,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\thiba\Desktop\INFO\libav-i686-w64-mingw32-20160101\usr\include;C:\Users\thiba\Desktop\INFO\SDL2_ttf-2.0.14\include;C:\Users\thiba\Desktop\INFO\SDL2_image-2.0.5\include;C:\Users\thiba\Desktop\INFO\SDL2-2.0.12\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\thiba\Desktop\INFO\libav-i686-w64-mingw32-20160101\usr\include;C:\Users\thiba\Desktop\INFO\SDL2_ttf-2.0.14\include;C:\Users\thiba\Desktop\INFO\SDL2_image-2.0.5\include;C:\Users\thiba\Desktop\INFO\SDL2-2.0.12\include;C:\Users\thiba\Desktop\INFO\MinGW\include\SDL;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Users\thiba\Desktop\INFO\GameJam1\x64\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -152,11 +152,11 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;Shell32.lib;SDL2_mixer.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

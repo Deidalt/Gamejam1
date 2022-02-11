@@ -98,6 +98,19 @@ void Evenement() {
                 else if (eventV.key.keysym.sym == SDLK_6 || eventV.key.keysym.sym == SDLK_KP_6) {
                     SetAsAction(NO_ACTION);
                 }
+                else if (eventV.key.keysym.sym == SDLK_7 || eventV.key.keysym.sym == SDLK_KP_7) {
+                    if (Mix_PausedMusic() == 1)
+                    {
+                        //Resume the music
+                        Mix_ResumeMusic();
+                    }
+                    //If the music is playing
+                    else
+                    {
+                        //Pause the music
+                        Mix_PauseMusic();
+                    }
+                }
             }
             break;
         }

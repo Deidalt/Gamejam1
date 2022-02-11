@@ -8,6 +8,7 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include <SDL_mixer.h>
 
 #define LMAP 30
 #define HMAP 30
