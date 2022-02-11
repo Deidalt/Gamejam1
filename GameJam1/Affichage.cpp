@@ -972,6 +972,7 @@ void Afficher() {
         posSpeed.x += arrond(20 * Zoom);
         SDL_RenderCopy(Renderer, SpeedT[1], NULL, &posSpeed);
         posSpeed.x += arrond(70 * Zoom);
+
         sprintf(buff1, "x%d", 2000 / timeTurn);
         SDL_Point posXtime = { posSpeed.x, arrond(8 * Zoom) };
         TTFrender(buff1, ArialNarrowB77, { 150, 150, 150 }, posXtime);

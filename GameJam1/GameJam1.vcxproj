@@ -132,13 +132,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include;$(ProjectDir)\lib\SDL_mixer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL_mixer;$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64;$(ProjectDir)\lib\SDL_mixer</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2_mixer.lib;SDL2_mixer.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL_mixer;$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,15 +149,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include;$(ProjectDir)\lib\SDL_mixer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL_mixer;$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2_mixer.lib;SDL2_mixer.libShell32.lib;SDL2_mixer.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64;$(ProjectDir)\lib\SDL_mixer</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;Shell32.lib;SDL2_mixer.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL_mixer;$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
