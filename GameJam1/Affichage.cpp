@@ -20,6 +20,56 @@ static inline void DisplayTexts(TTF_Font* ArialNarrowB77);
 static inline void DisplayTexts2(TTF_Font* ArialNarrowB77);
 int TTFrender(const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Point posft, bool solid=false);
 
+static void TTFrenderNumbers(const char* chaine, TTF_Font* ft, SDL_Color numbersColor, SDL_Rect pos) {
+#define MAX_DIFFERENT_COLOR_NUMBERS 5
+    static SDL_Texture* numbers[MAX_DIFFERENT_COLOR_NUMBERS][10] = { NULL };
+    static SDL_Color colors[MAX_DIFFERENT_COLOR_NUMBERS] = { };
+    static bool init = false;
+
+    if (!init) {
+        memset(numbers, 0, sizeof(numbers)); // Set to null
+        memset(colors, 0x01u, sizeof(colors));
+        init = true;
+    }
+
+    int color = 0;
+    for (color = 0; color < MAX_DIFFERENT_COLOR_NUMBERS; ++color) {
+        if (colors[color].r == 0x01 && colors[color].g == 0x01) { // Should check blue too but doesn't matter with the current code
+            colors[color] = numbersColor; // The color hasn't been allocated yet --> register it
+            break;
+        } else if (colors[color].r == numbersColor.r && colors[color].g == numbersColor.g && colors[color].b == numbersColor.b) {
+            break; // Color found
+        }
+    }
+
+    if (color == MAX_DIFFERENT_COLOR_NUMBERS) {
+        printf("Too many color numbers already! Color 0 used... (increase MAX_DIFFERENT_COLOR_NUMBERS to solve this).\n");
+        color = 0;
+    }
+
+    for (int i = 0; chaine[i] != '\0'; ++i) {
+        int v = chaine[i] - '0';
+
+        if (0 <= v && v <= 9) {
+            if (numbers[color][v] == NULL) { // Allocate for the first time this number
+                char txt[2] = "x";
+                txt[0] = chaine[i];
+                SDL_Surface* surf = TTF_RenderText_Blended(ft, txt, numbersColor);
+                numbers[color][v] = SDL_CreateTextureFromSurface(Renderer, surf);
+                pos.w = surf->w, pos.h = surf->h;
+                SDL_FreeSurface(surf);
+            }
+            else {
+                SDL_QueryTexture(numbers[color][v], NULL, NULL, &pos.w, &pos.h);
+            }
+
+            SDL_RenderCopy(Renderer, numbers[color][v], NULL, &pos);
+            
+            pos.x += pos.w;
+        }
+    }
+}
+
 void TTFprerender(const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Texture** texture, int* w, int* h) {
     SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
     *texture = SDL_CreateTextureFromSurface(Renderer, HudRessS);
@@ -27,13 +77,19 @@ void TTFprerender(const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Texture
     SDL_FreeSurface(HudRessS);
 }
 
-void TTFRenderWithTextBefore(SDL_Texture* prerender, int w, int h, const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Point posft) {
+void TTFRenderWithTextBefore(SDL_Texture* prerender, int w, int h, const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Point posft, bool textIsNumeric) {
     SDL_Rect posT = { posft.x, posft.y, w, h };
 
     SDL_RenderCopy(Renderer, prerender, NULL, &posT);
 
     posft.x += w;
-    TTFrender(chaine, ft, color, posft, true);
+
+    if (textIsNumeric) {
+        TTFrenderNumbers(chaine, ft, color, { posft.x, posft.y, 0, 0 });
+    }
+    else {
+        TTFrender(chaine, ft, color, posft, true);
+    }
 }
 
 int TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft, bool solid) {
@@ -998,32 +1054,32 @@ static inline void DisplayTexts(TTF_Font* ArialNarrowB77) {
     SDL_Point posRess = { arrond(910 * Zoom), arrond(10 * Zoom) };
     sprintf(buff1, "5");
     posRess.y += arrond(70 * Zoom);
-    TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+    TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
     ++i;
     
     if (Ress.Hunt) {
         sprintf(buff1, "%d", Ress.Hunt * 10);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
     }
     ++i;
     if (Ress.Fish) {
         sprintf(buff1, "%d", Ress.Fish * 10);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
     }
     ++i;
     if (Ress.Harvest && Ress.River) {
         sprintf(buff1, "%d", Ress.Harvest * 5);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
     }
     ++i;
     posRess.y = arrond(80 * Zoom);
     posRess.x += arrond(600 * Zoom);
     if (IsColdOn()) {
         sprintf(buff1, "%d", GetSickNumber());
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
     }
     ++i;
     posRess.y = arrond(80 * Zoom);
@@ -1035,13 +1091,13 @@ static inline void DisplayTexts(TTF_Font* ArialNarrowB77) {
         if (lastAction == PLANT)
             cptplant += 2 + 2 * era;
         sprintf(buff1, "%d", cptplant);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess, true);
         posRess.y += arrond(70 * Zoom);
     }
     ++i;
     if (Ress.Treecut) {
         sprintf(buff1, "%d", Ress.Treecut);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 200, 150, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 200, 150, 150 }, posRess, true);
         posRess.y += arrond(70 * Zoom);
     }
     ++i;
