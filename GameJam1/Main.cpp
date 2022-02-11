@@ -30,6 +30,7 @@ int rain = 0; //rain action
 int fire = 0; //fire event
 int avalanche = 0;//avalanche event
 int tsunami = 0;//tsunami event
+int meteor = 0;//meteor event *CaseI*CaseJ
 int hospitalCount = 0;
 Menus Menu = NONE; 
 int SousMenu = 0;
@@ -206,16 +207,19 @@ static inline void ManageSeasons() {
 		if (fire > 0 || rand() % 100 < 5 ) { //5%
 			Fire(); //incendie
 		}
+		
 	}
-	else if (ActionAuto == 1) {
-		SetAsAction(RAIN);
-		ActionAuto = 0;
+	else {
+		if (rand() % 100 < 3) { //3%
+			Avalanche();
+		}
+		if (ActionAuto == 1) {
+			SetAsAction(RAIN);
+			ActionAuto = 0;
+		}
 	}
 	if (avalanche) {
 		avalanche--;
-	}
-	if (rand() % 100 < 3) { //3%
-		Avalanche();
 	}
 	
 	if (rand() % 100 < 3) { //3%
@@ -283,7 +287,7 @@ static bool initForestLocation(int i, int j) {
 	if (i < 19 && j>15)
 		return 0; 
 	if (i >= COL_FOREST && i < COL_FOREST + FOREST_W && j >= LINE_FOREST && j < LINE_FOREST + FOREST_H && Grid[i][j].Object == EMPTY_CASE) {
-		if (rand() % 100 < 5) { //Change random for trees number
+		if (rand() % 100 < 70) { //Change random for trees number
 			Ress.Trees += 4;
 			return 1;
 		}
@@ -419,14 +423,13 @@ void BuildMill() {
 }
 
 void BuildFields() {
-	//int cptHunt = Ress.Hunt + (Ress.Fish - 1) * 2; //Les bateaux de peche en trop seront remplacés par des champs
-	//Ress.Fish = 1;
+	//harvest
 	while (Ress.Food + 10 > Ress.Harvest * 5) { //+10 de la peche
 		//cptHunt--;
 		Ress.Harvest++;
 		Ress.Treecut++;
 		for (int i = 14;i > 0;i--) {
-			for (int j = 20;j < 27;j++) {
+			for (int j = 18;j < 24;j++) {
 				if (Grid[i][j].Object == EMPTY_CASE) {
 					if (Grid[i + 1][j].Object == FIELD || Grid[i - 1][j].Object == FIELD || Grid[i][j - 1].Object == FIELD || Grid[i][j + 1].Object == FIELD) {
 						Grid[i][j].Object = FIELD;
@@ -525,22 +528,22 @@ void MedievalEra() {
 			Ress.Food -= 10;
 			fishing--;
 		}
-		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse ?
+		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse
 			//Harvest
 			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
 		}
 		while (Ress.Food > 0 && Ress.Animals > 0) {
 			Hunt();
 		}
+
 		while (Ress.Food > 0) {
-			
 			//build new temporary Ship
 			Ress.Food -= 10;
 			BuildShip();
 		}
 	} //end Ress.Food
 	
-	if (Ress.Fish == 0) {
+	if (Ress.Fish == 0 && tsunami==0) {
 		BuildShip();
 	}
 	
@@ -554,6 +557,7 @@ void MedievalEra() {
 }
 
 void ContemporaryEra() {
+
 	static int initEra = 0;
 	if (initEra==0) {
 		BuildFireStation();
@@ -563,6 +567,43 @@ void ContemporaryEra() {
 	Ress.Pop += 4;
 	int found = 0;
 	Ress.Treecut = 10;
+	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
+	Ress.Food -= 5;
+	if (Revenge) {
+		Revenge = 0;
+		Ress.Food -= 10;
+		Ress.Animals -= 3;
+		Ress.Hunt += 2;
+	}
+	if (Ress.River) { //works while flood
+		if (Grid[13][20].Object != MILL) {
+			BuildMill();
+		}
+		BuildFields();
+	}
+	while (Ress.Food > 0) {
+		int fishing = Ress.Fish;
+		while (Ress.Food > 0 && fishing) {
+			//1 fisher
+			Ress.Food -= 10;
+			fishing--;
+		}
+		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse
+			//Harvest
+			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
+		}
+		while (Ress.Food > 0 && Ress.Animals > 0) {
+			Hunt();
+		}
+
+		while (Ress.Food > 0) {
+			//build new temporary Ship
+			Ress.Food -= 10;
+			BuildShip();
+		}
+	} //end Ress.Food
+
+
 	if (Ress.Trees < 50)
 		Ress.Treecut = 0;//collective consciousness
 	if (Ress.Pop > Ress.Huts + Ress.Houses*2 + Ress.Apparts*4) {
@@ -576,7 +617,7 @@ void NoAction() {}
 void Plant() {
 	if (fire > 0)
 		return;
-	int nbTreesAdded = 2+2*era;
+	int nbTreesAdded = 2+4*era;
 	int Rtree = rand() % (FOREST_H * FOREST_W + 1); //random tree
 	int i = Rtree % FOREST_W; //10col for 10line
 	int j = Rtree / FOREST_W;
@@ -657,18 +698,35 @@ void Fire() {
 }
 
 void Avalanche() {
-	avalanche = 3;
+	avalanche = 7;
 	for (int i = 0;i < LMAP;i++) {
 		if (Grid[i][3].Object != EMPTY_CASE && Grid[i][3].Object != RIVER) {
-			Grid[i][3].Object = EMPTY_CASE;
+			if (Grid[i][3].Object == FOREST) {
+				if (Grid[i][3].State < 4) 
+					Ress.Trees -= 4 - Grid[i][3].State;
+				Grid[i][3].State = 4;
+			}
+			else
+				Grid[i][3].Object = EMPTY_CASE;
 		}
 	}
 }
 void Tsunami() {
 	tsunami = 3;
+	Ress.River = 1;
+	riverDryness = 0;
+	Ress.Fish = 0;
 	for (int i = 0;i < LMAP;i++) {
-		if (Grid[i][24].Object != EMPTY_CASE && Grid[i][24].Object != RIVER) {
-			Grid[i][24].Object = EMPTY_CASE;
+		for (int j = 24;j < HMAP;j++) {
+			if (Grid[i][j].Object != EMPTY_CASE && Grid[i][j].Object != RIVER && Grid[i][j].Object != SEA) {
+				if (Grid[i][j].Object == FOREST) {
+					if (Grid[i][j].State < 4)
+						Ress.Trees -= 4 - Grid[i][j].State;
+					Grid[i][j].State = 4;
+				}
+				else
+					Grid[i][j].Object = EMPTY_CASE;
+			}
 		}
 	}
 }
@@ -721,10 +779,26 @@ void Cold() {
 }
 
 void Meteor() {
-	Ress.Pop -= 10;
-	if (Ress.Pop < 0) {
-		// @TODO: Game over -- hunter compté comme population ?
+	int Rcase = rand() % (LMAP * HMAP);
+	int CaseI = Rcase % LMAP;
+	int CaseJ = Rcase / LMAP;
+	meteor = CaseJ*HMAP + CaseI;
+	if (Grid[CaseI][CaseJ].Object == FOREST && Grid[CaseI][CaseJ].State < 4) {
+		Ress.Trees -= 4 - Grid[CaseI][CaseJ].State;
+		Grid[CaseI][CaseJ].State += 5;
+		fire++;
 	}
+	for (int i = CaseI - 1;i < CaseI + 2;i++) {
+		if (Grid[i][CaseJ].Object == HUT || Grid[i][CaseJ].Object == HOUSE || Grid[i][CaseJ].Object == APPART) {
+			Grid[i][CaseJ].State = -int(SDL_GetTicks()+2000);
+		}	
+	}
+	for (int j = CaseJ - 1;j < CaseJ + 2;j++) {
+		if (Grid[CaseI][j].Object == HUT || Grid[CaseI][j].Object == HOUSE || Grid[CaseI][j].Object == APPART) {
+			Grid[CaseI][j].State = -int(SDL_GetTicks()+2000);
+		}	
+	}
+	
 }
 
 void Devour() {

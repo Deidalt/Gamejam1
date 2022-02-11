@@ -1,10 +1,12 @@
 
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <math.h>
 
 #include "Main.h"
 #include "Fonctions.h"
 #include "Pixel.h"
+
 
 #define OMAPY 1446
 #define DECALAGE 0 //Manque un bout à gauche de la map donc on décale tout
@@ -110,6 +112,8 @@ void Afficher() {
     char buff1[100]; 
     char buff2[50] = {};
     static sTree posTree[30][30];
+    static int cptFire = 0;
+    static unsigned int timerFire = SDL_GetTicks() + 83;
 
     static TTF_Font* ArialNarrowB77 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 77*Zoom);
     static TTF_Font* ArialNarrowB200 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 160*Zoom);
@@ -152,6 +156,7 @@ void Afficher() {
     static SDL_Texture* LeaveT;
     static SDL_Texture* WinT;
     static SDL_Texture* LoseT;
+    static SDL_Texture* EraT[3];
 
     if (Initialised == 0) {
         //Vars init
@@ -249,6 +254,18 @@ void Afficher() {
         SDL_Surface* LoseS = TTF_RenderText_Blended(ArialNarrowB200, buff1, { 255,255,255 });
         LoseT = SDL_CreateTextureFromSurface(Renderer, LoseS);
         SDL_FreeSurface(LoseS);
+        sprintf(buff1, "Tribal era");
+        SDL_Surface* EraS = TTF_RenderText_Blended(ArialNarrowB77, buff1, { 200,200,200 });
+        EraT[0] = SDL_CreateTextureFromSurface(Renderer, EraS);
+        SDL_FreeSurface(EraS);
+        sprintf(buff1, "Medieval era");
+        EraS = TTF_RenderText_Blended(ArialNarrowB77, buff1, { 200,200,200 });
+        EraT[1] = SDL_CreateTextureFromSurface(Renderer, EraS);
+        SDL_FreeSurface(EraS);
+        sprintf(buff1, "Contemporary era");
+        EraS = TTF_RenderText_Blended(ArialNarrowB77, buff1, { 200,200,200 });
+        EraT[2] = SDL_CreateTextureFromSurface(Renderer, EraS);
+        SDL_FreeSurface(EraS);
 
         Year = 1; //Game Starts here
         timegame = SDL_GetTicks();
@@ -325,8 +342,7 @@ void Afficher() {
                         //SDL_SetTextureColorMod(CaseT, 100, 255, 100);
                     }
                     if (Grid[j][i].State > 4) { //fire
-                        static int cptFire = 0;
-                        static unsigned int timerFire = SDL_GetTicks() + 83;
+                        
                         if (timerFire < SDL_GetTicks()) {
                             cptFire++;
                             if (cptFire > 5)
@@ -406,6 +422,18 @@ void Afficher() {
                     }
                     else if (Grid[j][i].State > 4) {
                         for (unsigned int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
+                            if (arb == 0) {
+                                idtree = Grid[j - 1][i].id;
+                            }
+                            else if (arb == 1) {
+                                idtree = Grid[j + 1][i].id;
+                            }
+                            else if (arb == 2) {
+                                idtree = Grid[j][i + 1].id;
+                            }
+                            else if (arb == 3) {
+                                idtree = Grid[j][i - 1].id;
+                            }
                             QueryText(TreeAT[idtree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
                             if (period < HIVER) {
@@ -428,41 +456,117 @@ void Afficher() {
                 }
                 else if (Grid[j][i].Object == HUT) {
                     //SDL_SetTextureColorMod(CaseT, 255, 153, 255);
+                    if (Grid[j][i].State < 0) {
+                        if (fabsf(Grid[j][i].State) > SDL_GetTicks()) {
+                            //fire
+                            if (timerFire < SDL_GetTicks()) {
+                                cptFire++;
+                                if (cptFire > 5)
+                                    cptFire = 0;
+                                timerFire = SDL_GetTicks() - timerFire + SDL_GetTicks() + 83;
+                                timerFire = SDL_GetTicks() + 83;
+                            }
 
-                    if (Grid[j][i].State < SDL_GetTicks())
-                        Grid[j][i].State = 1;
-                    QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
-                    SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                    SDL_RenderCopy(Renderer, HouseAT[Grid[j][i].id], NULL, &posHouseA);
-                }
-                else if (Grid[j][i].Object == HOUSE) {
-                    if (Grid[j][i].State > SDL_GetTicks()) {
-                        //Building
-                        QueryText4(BuildingT, &wText, &hText);
-                        SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
-
+                            QueryText4(FireT[cptFire], &wText, &hText);
+                            SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
+                        }
+                        else {
+                            Grid[j][i].State = 0;
+                            Grid[j][i].Object = EMPTY_CASE;
+                            Ress.Pop -= 1;
+                        }
                     }
                     else {
                         if (Grid[j][i].State < SDL_GetTicks())
                             Grid[j][i].State = 1;
-                        //SDL_SetTextureColorMod(CaseT, 204, 0, 204);
-                        QueryText4(HouseBT[Grid[j][i].id], &wText, &hText);
-                        SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                        SDL_RenderCopy(Renderer, HouseBT[Grid[j][i].id], NULL, &posHouseB);
+                        QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
+                        SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, HouseAT[Grid[j][i].id], NULL, &posHouseA);
+                    }
+                }
+                else if (Grid[j][i].Object == HOUSE) {
+                    if (Grid[j][i].State < 0) {
+                        if (fabsf(Grid[j][i].State) > SDL_GetTicks()) {
+                            //fire
+                            if (timerFire < SDL_GetTicks()) {
+                                cptFire++;
+                                if (cptFire > 5)
+                                    cptFire = 0;
+                                timerFire = SDL_GetTicks() - timerFire + SDL_GetTicks() + 83;
+                                timerFire = SDL_GetTicks() + 83;
+                            }
+
+                            QueryText4(FireT[cptFire], &wText, &hText);
+                            SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
+                        }
+                        else {
+                            Grid[j][i].State = 0;
+                            Grid[j][i].Object = EMPTY_CASE;
+                            Ress.Pop -= 2;
+                        }
+                    }
+                    else {
+                        if (Grid[j][i].State > SDL_GetTicks()) {
+                            //Building
+                            QueryText4(BuildingT, &wText, &hText);
+                            SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
+
+                        }
+                        else {
+                            if (Grid[j][i].State < SDL_GetTicks())
+                                Grid[j][i].State = 1;
+                            //SDL_SetTextureColorMod(CaseT, 204, 0, 204);
+                            QueryText4(HouseBT[Grid[j][i].id], &wText, &hText);
+                            SDL_Rect posHouseB = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, HouseBT[Grid[j][i].id], NULL, &posHouseB);
+                        }
                     }
                 }
                 else if (Grid[j][i].Object == APPART) {
-                    //SDL_SetTextureColorMod(CaseT, 102, 0, 102);
-                    QueryText4(HouseCT[Grid[j][i].id], &wText, &hText);
-                    SDL_Rect posHouseC = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                    SDL_RenderCopy(Renderer, HouseCT[Grid[j][i].id], NULL, &posHouseC);
+                    if (Grid[j][i].State < 0) {
+                        if (fabsf(Grid[j][i].State) > SDL_GetTicks()) {
+                            //fire
+                            if (timerFire < SDL_GetTicks()) {
+                                cptFire++;
+                                if (cptFire > 5)
+                                    cptFire = 0;
+                                timerFire = SDL_GetTicks() - timerFire + SDL_GetTicks() + 83;
+                                timerFire = SDL_GetTicks() + 83;
+                            }
+
+                            QueryText4(FireT[cptFire], &wText, &hText);
+                            SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
+                        }
+                        else {
+                            Grid[j][i].State = 0;
+                            Grid[j][i].Object = EMPTY_CASE;
+                            Ress.Pop -= 4;
+                        }
+                    }
+                    else {
+                        if (Grid[j][i].State > SDL_GetTicks()) {
+                            //Building
+                            QueryText4(BuildingT, &wText, &hText);
+                            SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
+
+                        }
+                        else {
+                            QueryText4(HouseCT[Grid[j][i].id], &wText, &hText);
+                            SDL_Rect posHouseC = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                            SDL_RenderCopy(Renderer, HouseCT[Grid[j][i].id], NULL, &posHouseC);
+                        }
+                    }
                 }
 
                 else if (Grid[j][i].Object == FIELD) {
                     if (i == 20 && j == 13) {
                         if (Grid[j][i].State > SDL_GetTicks()) {
-                            //Building
+                            //Building mill
                             QueryText4(BuildingT, &wText, &hText);
                             SDL_Rect posBuilding = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                             SDL_RenderCopy(Renderer, BuildingT, NULL, &posBuilding);
@@ -555,6 +659,14 @@ void Afficher() {
         SDL_Rect posMeteo = { 0,0,wText,hText };
         SDL_RenderCopy(Renderer, SnowT[cptSnow], NULL, &posMeteo);
     }
+    if (lastAction == METEOR) {
+        int CDMeteor = (SDL_GetTicks() - timegame) % timeTurn ;
+        //SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
+        printf("bbc %d\n", CDMeteor);
+        QueryText4(MeteorT, &wText, &hText);
+        SDL_Rect posMeteor = { arrond((meteor%LMAP)*CaseL.x*Zoom - posxy.x),0 + 2 * CDMeteor,wText,hText };
+        SDL_RenderCopy(Renderer, MeteorT, NULL, &posMeteor);
+    }
 
     
     
@@ -608,8 +720,9 @@ void Afficher() {
             while (nbFin>=0) {
                 if (Year >= YEARMAX) {
                     //win
-                    posFin.x = wText * nbFin % ScreenL.x;
-                    posFin.y = wText * wText * nbFin / ScreenL.x;
+                    posFin.x = wText * ((wText*nbFin % ScreenL.x) / wText);
+                    posFin.y = hText * (wText * nbFin / ScreenL.x);
+                    printf("aaa %d %d %d\n", posFin.x, posFin.y,nbFin);
                     SDL_RenderCopy(Renderer, InteractT[0], NULL, &posFin);
                     if (Ress.Animals) {
                         posFin.x = ScreenL.x - posFin.x - wText;
@@ -629,14 +742,14 @@ void Afficher() {
             }
             if (Year >= YEARMAX) {
                 SDL_QueryTexture(WinT, NULL, NULL, &wText, &hText);
-                SDL_SetTextureColorMod(WinT, 100, 255, 100);
-                SDL_Rect posWin = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 600 * Zoom),wText,hText };
+                SDL_SetTextureColorMod(WinT, 100, 200, 100);
+                SDL_Rect posWin = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 500 * Zoom),wText,hText };
                 SDL_RenderCopy(Renderer, WinT, NULL, &posWin);
             }
             else {
                 SDL_QueryTexture(LoseT, NULL, NULL, &wText, &hText);
                 SDL_SetTextureColorMod(LoseT, 255, 100, 100);
-                SDL_Rect posLose = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 600 * Zoom),wText,hText };
+                SDL_Rect posLose = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 500 * Zoom),wText,hText };
                 SDL_RenderCopy(Renderer, LoseT, NULL, &posLose);
             }
         }
@@ -806,9 +919,10 @@ void Afficher() {
         sprintf(buff1, "Year %d", Year);
         SDL_Point posYear = { arrond(400 * Zoom), arrond(5 * Zoom) };
         TTFrender(buff1, ArialNarrowB77, { 200, 200, 200 }, posYear);
-        sprintf(buff1, "%s era", GetEraName());
-        SDL_Point posEra = { arrond(3380 * Zoom), arrond(5 * Zoom) };
-        TTFrender(buff1, ArialNarrowB77, { 200, 200, 200 }, posEra);
+        SDL_QueryTexture(EraT[era], NULL, NULL, &wText, &hText);
+        SDL_Rect posEra = { arrond(3520 * Zoom - wText/2), arrond(5 * Zoom),wText,hText };
+        SDL_RenderCopy(Renderer, EraT[era], NULL, &posEra);
+
         for (j = 0; j < 7;j++) {
             float CDaction = ((SDL_GetTicks() - timegame) % timeTurn) / float(timeTurn);
             if (j == 1) {
@@ -824,7 +938,7 @@ void Afficher() {
             else if (j == 2) {
                 CDaction = float((Year % (YEARS_PER_SEASON * 4)) % (YEARS_PER_SEASON * 3)) / (YEARS_PER_SEASON * 3);
             }
-            else if (j == 3)
+            else if (j == 3 && era == 0)
                 CDaction = float(Ress.Pop) / ERAMED;
 
             if (CDaction < 0)
@@ -863,20 +977,24 @@ void Afficher() {
 
 static inline void DisplayTexts(TTF_Font* ArialNarrowB77) {
     char buff1[100];
-    static SDL_Texture* startText[5] = { NULL };
-    static int widths[5], heights[5];
+    static SDL_Texture* startText[7] = { NULL };
+    static int widths[7], heights[7];
     int i = 0;
 
     if (startText[0] == NULL) {
-        TTFprerender("Gathering +", ArialNarrowB77, {150, 255, 150}, &startText[i], &widths[i], &heights[i]);
+        TTFprerender("Gathering +", ArialNarrowB77, {150, 200, 150}, &startText[i], &widths[i], &heights[i]);
         ++i;
-        TTFprerender("Hunt +", ArialNarrowB77, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        TTFprerender("Hunt +", ArialNarrowB77, { 150, 200, 150 }, &startText[i], &widths[i], &heights[i]);
         ++i;
-        TTFprerender("Fish +", ArialNarrowB77, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        TTFprerender("Fish +", ArialNarrowB77, { 150, 200, 150 }, &startText[i], &widths[i], &heights[i]);
         ++i;
-        TTFprerender("Harvest +", ArialNarrowB77, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        TTFprerender("Harvest +", ArialNarrowB77, { 150, 200, 150 }, &startText[i], &widths[i], &heights[i]);
         ++i;
-        TTFprerender("Sick +", ArialNarrowB77, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        TTFprerender("Sick +", ArialNarrowB77, { 150, 200, 150 }, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Bud +", ArialNarrowB77, { 150, 200, 150 }, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Wood -", ArialNarrowB77, { 200, 150, 150 }, &startText[i], &widths[i], &heights[i]);
     }
 
     i = 0;
@@ -884,33 +1002,54 @@ static inline void DisplayTexts(TTF_Font* ArialNarrowB77) {
     SDL_Point posRess = { arrond(910 * Zoom), arrond(10 * Zoom) };
     sprintf(buff1, "5");
     posRess.y += arrond(70 * Zoom);
-    TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 255, 150 }, posRess);
+    TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
     ++i;
     
     if (Ress.Hunt) {
         sprintf(buff1, "%d", Ress.Hunt * 10);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 255, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
     }
     ++i;
     if (Ress.Fish) {
         sprintf(buff1, "%d", Ress.Fish * 10);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 255, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
     }
     ++i;
     if (Ress.Harvest && Ress.River) {
         sprintf(buff1, "%d", Ress.Harvest * 5);
         posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 255, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
     }
     ++i;
+    posRess.y = arrond(80 * Zoom);
+    posRess.x += arrond(600 * Zoom);
     if (IsColdOn()) {
         sprintf(buff1, "%d", GetSickNumber());
-        posRess.y += arrond(70 * Zoom);
-        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 255, 150 }, posRess);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
     }
     ++i;
+    posRess.y = arrond(80 * Zoom);
+    posRess.x += arrond(600 * Zoom);
+    if (lastAction == PLANT || Ress.Trees < 50) {
+        int cptplant = 0;
+        if (Ress.Trees < 50)
+            cptplant += 10;
+        if (lastAction == PLANT)
+            cptplant += 2 + 2 * era;
+        sprintf(buff1, "%d", cptplant);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 150, 200, 150 }, posRess);
+        posRess.y += arrond(70 * Zoom);
+    }
+    ++i;
+    if (Ress.Treecut) {
+        sprintf(buff1, "%d", Ress.Treecut);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB77, { 200, 150, 150 }, posRess);
+        posRess.y += arrond(70 * Zoom);
+    }
+    ++i;
+    
 }
 
 static inline void DisplayTexts2(TTF_Font* ArialNarrowB77) {
