@@ -979,12 +979,25 @@ void Afficher() {
         SDL_RenderCopy(Renderer, SpeedT[0], NULL, &posSpeed);
         posSpeed.x += arrond(20 * Zoom);
         SDL_RenderCopy(Renderer, SpeedT[0], NULL, &posSpeed);
-        sprintf(buff1, "Year %d", Year);
+
+
+        static SDL_Texture* yearTxt = NULL;
+        static int hYearTxt, wYearTxt;
+
+        if (yearTxt == NULL) {
+            TTFprerender("Year ", ArialNarrowB77, { 200, 200, 200 }, &yearTxt, &wYearTxt, &hYearTxt);
+        }
+        //sprintf(buff1, "Year %d", Year);
         SDL_Point posYear = { arrond(400 * Zoom), arrond(5 * Zoom) };
-        TTFrender(buff1, ArialNarrowB77, { 200, 200, 200 }, posYear);
+        //TTFrender(buff1, ArialNarrowB77, { 200, 200, 200 }, posYear);
+        sprintf(buff1, "%d", Year);
+        TTFRenderWithTextBefore(yearTxt, wYearTxt, hYearTxt, buff1, ArialNarrowB77, { 200, 200, 200 }, posYear, true);
+
         SDL_QueryTexture(EraT[era], NULL, NULL, &wText, &hText);
         SDL_Rect posEra = { arrond(3520 * Zoom - wText/2), arrond(5 * Zoom),wText,hText };
         SDL_RenderCopy(Renderer, EraT[era], NULL, &posEra);
+
+        
 
         for (j = 0; j < 8;j++) {
             float CDaction = ((SDL_GetTicks() - timegame) % timeTurn) / float(timeTurn);
@@ -1043,7 +1056,8 @@ void Afficher() {
             }
             sprintf(buff1, "%d", j);
             SDL_Point posAction = { arrond(200 * Zoom + j * 220 * Zoom + posNoir.w / 2 - 18 * Zoom),arrond(1850 * Zoom) + posNoir.h };
-            TTFrender(buff1, ArialNarrowB77, { 255, 250, 250 }, posAction);
+            //TTFrender(buff1, ArialNarrowB77, { 255, 250, 250 }, posAction);
+            TTFrenderNumbers(buff1, ArialNarrowB77, { 255, 250, 250 }, { posAction.x, posAction.y, 0, 0 });
 
 
         }
