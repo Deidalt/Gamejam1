@@ -103,6 +103,10 @@ void Afficher() {
     static SDL_Texture* BlueFilterT;
     static SDL_Texture* FrameT[4];
     static SDL_Texture* SpeedT[2];
+    static SDL_Texture* InteractT[7];
+    static SDL_Texture* AppleT;
+    static SDL_Texture* PopT;
+    static SDL_Texture* AnimalsT;
 
     if (Initialised == 0) {
         //Vars init
@@ -138,6 +142,8 @@ void Afficher() {
         for (i = 0;i < 7;i++) {
             sprintf(buff1, "Assets/Fx/Pluie/Pluie_%05d.png", i);
             RainT[i] = IMG_LoadTexture(Renderer, buff1);
+            sprintf(buff1, "Assets/Fx/UI//Logos/Int%d.png", i);
+            InteractT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 80;i++) {
             sprintf(buff1, "Assets/Fx//Neige/Neige 2_%05d.png", i);
@@ -147,8 +153,6 @@ void Afficher() {
             sprintf(buff1, "Assets/Fx/Feu/Feu_1_%05d.png", i);
             FireT[i] = IMG_LoadTexture(Renderer, buff1);
         }
-        sprintf(buff1, "Assets/Tiles/Other/moulin.png");
-        MillT = IMG_LoadTexture(Renderer, buff1);
         for (i = 0;i < 3;i++) {
             sprintf(buff1, "Assets/Tiles/Other/Field%d.png", i);
             FieldT[i] = IMG_LoadTexture(Renderer, buff1);
@@ -165,6 +169,14 @@ void Afficher() {
         BlackBgT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/UI/BlueFilter.png");
         BlueFilterT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/Other/moulin.png");
+        MillT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/UI/apple.png");
+        AppleT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/UI/population.png");
+        PopT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/UI/animals.png");
+        AnimalsT = IMG_LoadTexture(Renderer, buff1);
         Year = 1; //Game Starts here
         timegame = SDL_GetTicks();
 
@@ -573,6 +585,8 @@ void Afficher() {
         //Actions
         SDL_Rect posNoir = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond(200 * Zoom) };
         SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
+        SDL_RenderCopy(Renderer, InteractT[j], NULL, &posNoir);
+
         SDL_Rect posFrame = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),8 };
         SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
         posFrame.y += arrond(200 * Zoom) - 8;
@@ -582,7 +596,12 @@ void Afficher() {
         SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame2);
         posFrame2.x += arrond(200 * Zoom) - 8;
         SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame2);
+<<<<<<< Updated upstream
         if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && Period!=3) || (j == 3 && era==0)) {
+=======
+
+        if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && period!=3) || (j == 3 && era==0)) {
+>>>>>>> Stashed changes
             //CD
             SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
             posBlue.y += arrond(200 * Zoom - posBlue.h);
