@@ -2,7 +2,6 @@
 #ifndef PIXEL_H_
 #define PIXEL_H_
 
-#include "main.h"
 
 
 int arrond(float val);

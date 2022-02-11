@@ -3,7 +3,6 @@
 #include <SDL_image.h>
 #include "main.h"
 
-//SDL_SetTextureColorMod
 
 int arrond(float val){
     if(val<0)

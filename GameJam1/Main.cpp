@@ -30,6 +30,7 @@ int rain = 0; //rain action
 int fire = 0; //fire event
 int hospitalCount = 0;
 Menus Menu = NONE; 
+int SousMenu = 0;
 int ActionAuto = 0; //if not 0, action is save for when it is possible
 int timeTurn = TIMETURN;
 
@@ -53,6 +54,8 @@ void NoAction();
 
 void Fire();
 
+void initGame();
+
 bool IsGlacialSeason();
 bool IsDrySeason();
 static inline int GetColdResistance();
@@ -69,9 +72,9 @@ int main(int argc, char* argv[])
 	int i = 0, j = 0;
 	int PastYear = 0; //Check when year changes
 	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown, NoAction };
-	lastAction = PLANT;
+	
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
-
+	/*lastAction = PLANT;
 	Ress.River = 1;
 	Ress.Harvest = 0;
 	Ress.Fish = 0;
@@ -98,13 +101,14 @@ int main(int argc, char* argv[])
 	}
 	SDL_FreeSurface(HitboxRiverS);
 	Grid[5][10].Object = HUT;
-	Grid[5][10].id = rand() % 4;
+	Grid[5][10].id = rand() % 4;*/
+	initGame();
 	
 	Afficher(); //init game
 	timegame = SDL_GetTicks();
 
 	while (EndMain) {
-		if (Year >= 0 && Menu>=NONE) {
+		if (Year >= 0 && Menu!=ESCAPE) {
 			PastYear = Year;
 			if ((SDL_GetTicks() - timegame) / timeTurn >= 1) {
 				Year += 1; //+1 Year every 2 sec
@@ -141,7 +145,11 @@ int main(int argc, char* argv[])
 		if (Ress.Trees <= 0) {
 			Ress.Trees = 0;
 			Menu = ESCAPE; //Game Lost
-			printf("LOSE\n");
+			printf("LOSE1\n");
+		}
+		else if (Ress.Pop <= 0) {
+			Menu = ESCAPE;
+			printf("LOSE2\n");
 		}
 		SDL_Delay(1);
 		Evenement();
@@ -496,6 +504,7 @@ void MedievalEra() {
 		while (Ress.Food > 0 && fishing) {
 			//1 fisher
 			Ress.Food -= 10;
+			fishing--;
 		}
 		while (Ress.Food > 0 && Ress.River > 0) { /// Pour gérer sécheresse ?
 			//Harvest
@@ -505,6 +514,7 @@ void MedievalEra() {
 			Hunt();
 		}
 		while (Ress.Food > 0) {
+			
 			//build new temporary Ship
 			Ress.Food -= 10;
 			BuildShip();
@@ -735,4 +745,43 @@ const char* GetPeriodName() {
 const char* GetEraName() {
 	static const char* names[] = { "Tribal", "Medieval", "Contemporary"};
 	return names[era];
+}
+
+void initGame() {
+	int i = 0, j = 0;
+	printf("aaa %d\n",Year);
+	lastAction = PLANT;
+	Ress.River = 1;
+	Ress.Harvest = 0;
+	Ress.Fish = 0;
+	Ress.Animals = 15;
+	Ress.Pop = 1;
+	Ress.Trees = 0;
+	triggerCold = 0;
+	rain = 0;
+	era = TRIBAL;
+	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
+
+	for (i = 0; i < LMAP; i++) { //Init Grille //init map
+		for (j = 0; j < HMAP; j++) {
+			Grid[i][j].Object = EMPTY_CASE;
+			if (j < 3)
+				Grid[i][j].Object = MOUNTAIN;
+			else if (IsSeaLocation(i, j))
+				Grid[i][j].Object = SEA;
+			else if (IsRiverLocation(HitboxRiverS, i, j))
+				Grid[i][j].Object = RIVER;
+			else if (initForestLocation(i, j)) {
+				Grid[i][j].Object = FOREST;
+				Grid[i][j].id = rand() % 4;
+				if (Grid[i][j].id == 1)
+					Grid[i][j].id += rand() % 3;
+			}
+		}
+		Grid[i][j].State = 0;
+	}
+	SDL_FreeSurface(HitboxRiverS);
+	Grid[5][10].Object = HUT;
+	Grid[5][10].id = rand() % 4;
+	timeTurn = TIMETURN;
 }

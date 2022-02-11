@@ -28,73 +28,134 @@ void Evenement() {
                     timeStop = SDL_GetTicks() - timegame;
                 }
             }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
-                LastMove.x = 1;
+            if (Menu == ESCAPE) {
+                if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+                    SousMenu++;
+                    if (SousMenu > 2)
+                        SousMenu = 2;
+                }
+                if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {
+                    SousMenu--;
+                    if (SousMenu < 0)
+                        SousMenu = 0;
+                }
+                if (eventV.key.keysym.scancode == SDL_SCANCODE_RETURN || eventV.key.keysym.scancode == SDL_SCANCODE_KP_ENTER) {//Valider
+                    if (SousMenu == 0) {
+                        if (Ress.Trees <= 0) {
+                            //restart
+                            initGame();
+                            Year = 1; //Game Starts here
+                            timegame = SDL_GetTicks();
+                        }
+                        Menu = NONE;
+                    }
+                    else if (SousMenu == 1) {
+                        //restart
+                        initGame();
+                        Year = 1; //Game Starts here
+                        timegame = SDL_GetTicks();
+                        Menu = NONE;
+                        SousMenu = 0;
+                    }
+                    else {
+                        EndMain = 0;
+                    }
+                }
             }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
-                LastMove.x = 2;
-            }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {//BAS
-                LastMove.y = 3;
-            }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
-                LastMove.y = 4;
-            }
-            
+            else {
+                if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
+                    LastMove.x = 1;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
+                    LastMove.x = 2;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {//BAS
+                    LastMove.y = 3;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
+                    LastMove.y = 4;
+                }
 
-            else if (eventV.key.keysym.sym == SDLK_0 || eventV.key.keysym.sym == SDLK_KP_0) {
-                SetAsAction(PLANT);
-            }
-            else if (eventV.key.keysym.sym == SDLK_1 || eventV.key.keysym.sym == SDLK_KP_1) {
-                SetAsAction(RAIN);
-            }
-            else if (eventV.key.keysym.sym == SDLK_2 || eventV.key.keysym.sym == SDLK_KP_2) {
-                SetAsAction(COLD);
-            }
-            else if (eventV.key.keysym.sym == SDLK_3 || eventV.key.keysym.sym == SDLK_KP_3) {
-                SetAsAction(METEOR);
-            }
-            else if (eventV.key.keysym.sym == SDLK_4 || eventV.key.keysym.sym == SDLK_KP_4) {
-                SetAsAction(DEVOUR);
-            }
-            else if (eventV.key.keysym.sym == SDLK_5 || eventV.key.keysym.sym == SDLK_KP_5) {
-                SetAsAction(DROWN);
-            }
-            else if (eventV.key.keysym.sym == SDLK_6 || eventV.key.keysym.sym == SDLK_KP_6) {
-                SetAsAction(NO_ACTION);
-            }
 
+                else if (eventV.key.keysym.sym == SDLK_0 || eventV.key.keysym.sym == SDLK_KP_0) {
+                    SetAsAction(PLANT);
+                }
+                else if (eventV.key.keysym.sym == SDLK_1 || eventV.key.keysym.sym == SDLK_KP_1) {
+                    SetAsAction(RAIN);
+                }
+                else if (eventV.key.keysym.sym == SDLK_2 || eventV.key.keysym.sym == SDLK_KP_2) {
+                    SetAsAction(COLD);
+                }
+                else if (eventV.key.keysym.sym == SDLK_3 || eventV.key.keysym.sym == SDLK_KP_3) {
+                    SetAsAction(METEOR);
+                }
+                else if (eventV.key.keysym.sym == SDLK_4 || eventV.key.keysym.sym == SDLK_KP_4) {
+                    SetAsAction(DEVOUR);
+                }
+                else if (eventV.key.keysym.sym == SDLK_5 || eventV.key.keysym.sym == SDLK_KP_5) {
+                    SetAsAction(DROWN);
+                }
+                else if (eventV.key.keysym.sym == SDLK_6 || eventV.key.keysym.sym == SDLK_KP_6) {
+                    SetAsAction(NO_ACTION);
+                }
+            }
             break;
         }
         case SDL_KEYUP: {
-            if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
-                LastMove.x = 0;
+            if (Menu == ESCAPE) {
+                
             }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
-                LastMove.x = 0;
-            }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {//BAS
-                LastMove.y = 0;
-            }
-            else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
-                LastMove.y = 0;
-            }
-            else if (eventV.key.keysym.sym == SDLK_KP_PLUS) {
-                timeTurn = timeTurn / 2;
-                if (timeTurn < 250)
-                    timeTurn = 250;
-            }
-            else if (eventV.key.keysym.sym == SDLK_KP_MINUS) {
-                timeTurn = timeTurn * 2;
-                if (timeTurn > 2000)
-                    timeTurn = 2000;
+            else {
+                if (eventV.key.keysym.scancode == SDL_SCANCODE_D || eventV.key.keysym.scancode == SDL_SCANCODE_RIGHT) {//DROITE
+                    LastMove.x = 0;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
+                    LastMove.x = 0;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {//BAS
+                    LastMove.y = 0;
+                }
+                else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
+                    LastMove.y = 0;
+                }
+                else if (eventV.key.keysym.sym == SDLK_KP_PLUS) {
+                    timeTurn = timeTurn / 2;
+                    if (timeTurn < 250)
+                        timeTurn = 250;
+                }
+                else if (eventV.key.keysym.sym == SDLK_KP_MINUS) {
+                    timeTurn = timeTurn * 2;
+                    if (timeTurn > 2000)
+                        timeTurn = 2000;
+                }
             }
             break;
         }
         case SDL_MOUSEBUTTONDOWN: {
             if (eventV.button.button == SDL_BUTTON_LEFT) {
                 if (Menu == ESCAPE) {
-
+                    if (eventV.button.x > 1500 * Zoom && eventV.button.x < 2200 * Zoom) {
+                        if (eventV.button.y > ScreenL.y / 2 - 400 * Zoom && eventV.button.y < ScreenL.y / 2 - 200 * Zoom) {
+                            if (Ress.Trees <= 0) {
+                                //restart
+                                initGame();
+                                Year = 1; //Game Starts here
+                                timegame = SDL_GetTicks();
+                            }
+                            Menu = NONE;
+                        }
+                        else if (eventV.button.y > ScreenL.y / 2 - 100 * Zoom && eventV.button.y < ScreenL.y / 2 + 100 * Zoom) {
+                            //restart
+                            initGame();
+                            Year = 1; //Game Starts here
+                            timegame = SDL_GetTicks();
+                            Menu = NONE;
+                            SousMenu = 0;
+                        }
+                        else if (eventV.button.y > ScreenL.y / 2 + 200 * Zoom && eventV.button.y < ScreenL.y / 2 + 400 * Zoom) {
+                            EndMain = 0;
+                        }
+                    }
                 }
                 else {
                     if (eventV.button.y < 100 * Zoom && eventV.button.x < 270 * Zoom) {
@@ -128,6 +189,22 @@ void Evenement() {
                         if (eventV.button.y < 300 * Zoom) {
                             Menu = NONE;
                         }
+                    }
+                }
+            }
+        }
+        case SDL_MOUSEMOTION: {
+            if (Menu == ESCAPE) {
+                if (eventV.motion.x > 1500 * Zoom && eventV.motion.x < 2200 * Zoom) {
+
+                    if (eventV.motion.y > ScreenL.y / 2 - 400 * Zoom && eventV.motion.y < ScreenL.y / 2 - 200 * Zoom) {
+                        SousMenu = 0;
+                    }
+                    else if (eventV.motion.y > ScreenL.y / 2 - 100 * Zoom && eventV.motion.y < ScreenL.y / 2 + 100 * Zoom) {
+                        SousMenu = 1;
+                    }
+                    else if (eventV.motion.y > ScreenL.y / 2 + 200 * Zoom && eventV.motion.y < ScreenL.y / 2 + 400 * Zoom) {
+                        SousMenu = 2;
                     }
                 }
             }

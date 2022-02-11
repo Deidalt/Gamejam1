@@ -40,6 +40,7 @@ extern int rain;
 extern int fire;
 extern int timeTurn;
 extern int timegame;
+extern int SousMenu;
 
 typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MILL, FIELD = MILL, SHIP, FIRESTATION, BARRAGE, SECOURIST, HOSPI} CaseType;
 
@@ -75,7 +76,7 @@ extern Ressources Ress;
 
 #define ERAMED 20
 #define ERACONT 100
-#define YEARS_PER_SEASON  10//83
+#define YEARS_PER_SEASON  30//30
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
@@ -92,6 +93,8 @@ const char* GetEraName();
 
 bool IsGlacialSeason();
 bool IsDrySeason();
+
+void initGame();
 
 
 #endif
