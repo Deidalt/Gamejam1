@@ -8,6 +8,7 @@
 #include "Pixel.h"
 
 
+
 //Globals
 SDL_Window* Screen = NULL;
 SDL_Renderer *Renderer;
@@ -80,9 +81,26 @@ int main(int argc, char* argv[])
 	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown, NoAction };
 	
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
+
+	Mix_Music* gMusic = NULL;
+	//Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512);
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+	}
 	initGame();
 	
 	Afficher(); //init game
+	/*gMusic = Mix_LoadMUS("Sound/indie 7F.wav");
+	if (gMusic == NULL)
+	{
+		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
+	}
+	if (Mix_PlayingMusic() == 0)
+	{
+		//Play the music
+		Mix_PlayMusic(gMusic, -1);
+	}*/
 	timegame = SDL_GetTicks();
 
 	while (EndMain) {

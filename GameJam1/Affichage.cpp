@@ -144,7 +144,7 @@ void Afficher() {
     static SDL_Texture* BlueFilterT;
     static SDL_Texture* FrameT[4];
     static SDL_Texture* SpeedT[2];
-    static SDL_Texture* InteractT[7];
+    static SDL_Texture* InteractT[8];
     static SDL_Texture* AppleT;
     static SDL_Texture* PopT;
     static SDL_Texture* AnimalsT;
@@ -192,9 +192,11 @@ void Afficher() {
             sprintf(buff1, "Assets/Tiles/River/river%d.png", i);
             RiverT[i] = IMG_LoadTexture(Renderer, buff1);
         }
-        for (i = 0;i < 7;i++) {
-            sprintf(buff1, "Assets/Fx/Pluie/Pluie_%05d.png", i);
-            RainT[i] = IMG_LoadTexture(Renderer, buff1);
+        for (i = 0;i < 8;i++) {
+            if (i < 7) {
+                sprintf(buff1, "Assets/Fx/Pluie/Pluie_%05d.png", i);
+                RainT[i] = IMG_LoadTexture(Renderer, buff1);
+            }
             sprintf(buff1, "Assets/UI/Logos/Int%d.png", i);
             InteractT[i] = IMG_LoadTexture(Renderer, buff1);
         }
@@ -914,7 +916,7 @@ void Afficher() {
         posSpeed.x += arrond(20 * Zoom);
         SDL_RenderCopy(Renderer, SpeedT[1], NULL, &posSpeed);
         posSpeed.x += arrond(70 * Zoom);
-        sprintf(buff1, "X%d", 2000 / timeTurn);
+        sprintf(buff1, "x%d", 2000 / timeTurn);
         SDL_Point posXtime = { posSpeed.x, arrond(8 * Zoom) };
         TTFrender(buff1, ArialNarrowB77, { 150, 150, 150 }, posXtime);
         posSpeed.x += arrond(80 * Zoom);
@@ -928,7 +930,7 @@ void Afficher() {
         SDL_Rect posEra = { arrond(3520 * Zoom - wText/2), arrond(5 * Zoom),wText,hText };
         SDL_RenderCopy(Renderer, EraT[era], NULL, &posEra);
 
-        for (j = 0; j < 7;j++) {
+        for (j = 0; j < 8;j++) {
             float CDaction = ((SDL_GetTicks() - timegame) % timeTurn) / float(timeTurn);
             if (j == 1) {
                 if (period == ETE) {
@@ -954,7 +956,8 @@ void Afficher() {
             //Actions
             SDL_Rect posNoir = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond(200 * Zoom) };
             SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
-            SDL_RenderCopy(Renderer, InteractT[j], NULL, &posNoir);
+            if (j != 7 || (Mix_PausedMusic() == 0))
+             SDL_RenderCopy(Renderer, InteractT[j], NULL, &posNoir);
             if (getCurrentAction() == j) {
                 SDL_SetTextureColorMod(FrameT[0], 0, 0, 0);
                 SDL_SetTextureColorMod(FrameT[1], 0, 0, 255);
