@@ -41,7 +41,7 @@ void Evenement() {
                 }
                 if (eventV.key.keysym.scancode == SDL_SCANCODE_RETURN || eventV.key.keysym.scancode == SDL_SCANCODE_KP_ENTER) {//Valider
                     if (SousMenu == 0) {
-                        if (Ress.Trees <= 0) {
+                        if (Ress.Trees <= 0 || Ress.Pop <= 0 || Year >= YEARMAX) {
                             //restart
                             initGame();
                             Year = 1; //Game Starts here
@@ -136,7 +136,7 @@ void Evenement() {
                 if (Menu == ESCAPE) {
                     if (eventV.button.x > 1500 * Zoom && eventV.button.x < 2200 * Zoom) {
                         if (eventV.button.y > ScreenL.y / 2 - 400 * Zoom && eventV.button.y < ScreenL.y / 2 - 200 * Zoom) {
-                            if (Ress.Trees <= 0) {
+                            if (Ress.Trees <= 0 || Ress.Pop <= 0 || Year >= YEARMAX) {
                                 //restart
                                 initGame();
                                 Year = 1; //Game Starts here

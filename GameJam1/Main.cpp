@@ -28,6 +28,8 @@ int triggerCold = 0; //Cold action
 int riverDryness = 0;
 int rain = 0; //rain action
 int fire = 0; //fire event
+int avalanche = 0;//avalanche event
+int tsunami = 0;//tsunami event
 int hospitalCount = 0;
 Menus Menu = NONE; 
 int SousMenu = 0;
@@ -53,6 +55,8 @@ void Drown();
 void NoAction();
 
 void Fire();
+void Avalanche();
+void Tsunami();
 
 void initGame();
 
@@ -143,13 +147,15 @@ int main(int argc, char* argv[])
 
 		}
 		if (Ress.Trees <= 0) {
-			Ress.Trees = 0;
 			Menu = ESCAPE; //Game Lost
 			printf("LOSE1\n");
 		}
 		else if (Ress.Pop <= 0) {
 			Menu = ESCAPE;
 			printf("LOSE2\n");
+		}
+		else if (Year >= YEARMAX) {
+			Menu = ESCAPE;
 		}
 		SDL_Delay(1);
 		Evenement();
@@ -197,13 +203,26 @@ static inline void ManageSeasons() {
 
 	if (IsDrySeason()) {
 		ActionAuto = 1;
-		if (fire > 0 || rand() % 100 < 50 ) { //3%
+		if (fire > 0 || rand() % 100 < 5 ) { //5%
 			Fire(); //incendie
 		}
 	}
 	else if (ActionAuto == 1) {
 		SetAsAction(RAIN);
 		ActionAuto = 0;
+	}
+	if (avalanche) {
+		avalanche--;
+	}
+	if (rand() % 100 < 3) { //3%
+		Avalanche();
+	}
+	
+	if (rand() % 100 < 3) { //3%
+		Tsunami();
+	}
+	if (tsunami) {
+		tsunami--;
 	}
 	if (era == CONTEMPORARY) {
 		//Barrage upgrade
@@ -264,7 +283,7 @@ static bool initForestLocation(int i, int j) {
 	if (i < 19 && j>15)
 		return 0; 
 	if (i >= COL_FOREST && i < COL_FOREST + FOREST_W && j >= LINE_FOREST && j < LINE_FOREST + FOREST_H && Grid[i][j].Object == EMPTY_CASE) {
-		if (rand() % 3) {
+		if (rand() % 100 < 5) { //Change random for trees number
 			Ress.Trees += 4;
 			return 1;
 		}
@@ -637,6 +656,23 @@ void Fire() {
 	}
 }
 
+void Avalanche() {
+	avalanche = 3;
+	for (int i = 0;i < LMAP;i++) {
+		if (Grid[i][3].Object != EMPTY_CASE && Grid[i][3].Object != RIVER) {
+			Grid[i][3].Object = EMPTY_CASE;
+		}
+	}
+}
+void Tsunami() {
+	tsunami = 3;
+	for (int i = 0;i < LMAP;i++) {
+		if (Grid[i][24].Object != EMPTY_CASE && Grid[i][24].Object != RIVER) {
+			Grid[i][24].Object = EMPTY_CASE;
+		}
+	}
+}
+
 void Rain() {
 	if (rain == 0) {
 		if (riverDryness < 10 && era != CONTEMPORARY) { // Flood
@@ -749,7 +785,6 @@ const char* GetEraName() {
 
 void initGame() {
 	int i = 0, j = 0;
-	printf("aaa %d\n",Year);
 	lastAction = PLANT;
 	Ress.River = 1;
 	Ress.Harvest = 0;

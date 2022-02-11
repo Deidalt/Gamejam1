@@ -56,7 +56,7 @@ int TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft
 
 void InitAffichage() {
     //Libs init
-    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP/*   | SDL_WINDOW_ALLOW_HIGHDPI*/);
+    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED); //SDL_WINDOW_FULLSCREEN_DESKTOP
     if (Screen == NULL)
         printf("NULL Window\n");
     Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
@@ -65,7 +65,7 @@ void InitAffichage() {
     if (TTF_Init() == -1)
         printf("TTF %s\n", TTF_GetError());
 
-    SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Images/Case.png", "rb"), 1);
+    SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Assets/UI/Logos/Int0.png", "rb"), 1);
 
     if (IconeExe == NULL)
         printf("ICONULL %s\n", SDL_GetError());
@@ -103,6 +103,8 @@ void Afficher() {
     SDL_SetRenderDrawColor(Renderer, 16, 8, 21, 255);
     SDL_RenderClear(Renderer);
     static int Initialised = 0;
+    static int timerVictory = 0;
+
     int i = 0, j = 0; //loop
     int wText = 0, hText = 0, wText2, hText2; //dimensions des textures récupérées
     char buff1[100]; 
@@ -140,11 +142,16 @@ void Afficher() {
     static SDL_Texture* AppleT;
     static SDL_Texture* PopT;
     static SDL_Texture* AnimalsT;
+    static SDL_Texture* MeteorT = IMG_LoadTexture(Renderer, "Assets/Fx/meteorite.png");
+    static SDL_Texture* AvalancheT = IMG_LoadTexture(Renderer, "Assets/Fx/avalanche.png");
+    static SDL_Texture* TsunamiT = IMG_LoadTexture(Renderer, "Assets/Fx/tsunami.png");
 
     
     static SDL_Texture* RestartT;
     static SDL_Texture* ResumeT;
     static SDL_Texture* LeaveT;
+    static SDL_Texture* WinT;
+    static SDL_Texture* LoseT;
 
     if (Initialised == 0) {
         //Vars init
@@ -234,6 +241,14 @@ void Afficher() {
         LeaveS = TTF_RenderText_Blended(ArialNarrowB200, buff1, { 255,255,255 });
         LeaveT = SDL_CreateTextureFromSurface(Renderer, LeaveS);
         SDL_FreeSurface(LeaveS);
+        sprintf(buff1, "WIN");
+        SDL_Surface* WinS = TTF_RenderText_Blended(ArialNarrowB200, buff1, { 255,255,255 });
+        WinT = SDL_CreateTextureFromSurface(Renderer, WinS);
+        SDL_FreeSurface(WinS);
+        sprintf(buff1, "LOSE");
+        SDL_Surface* LoseS = TTF_RenderText_Blended(ArialNarrowB200, buff1, { 255,255,255 });
+        LoseT = SDL_CreateTextureFromSurface(Renderer, LoseS);
+        SDL_FreeSurface(LoseS);
 
         Year = 1; //Game Starts here
         timegame = SDL_GetTicks();
@@ -279,6 +294,17 @@ void Afficher() {
         //SDL_Texture* CaseT = IMG_LoadTexture(Renderer, "Images/Case.png"); //delete test
         //i et j sont inversés à l'affichage à cause de l'isometrie
         //reverse i and j for isometric
+        //FX2
+        if (avalanche) {
+            QueryText4(AvalancheT, &wText, &hText);
+            SDL_Rect posAvalanche = { posMap.x, posMap.y - hText + posMap.h, wText,hText };
+            SDL_RenderCopy(Renderer, AvalancheT, NULL, &posAvalanche);
+        }
+        if (tsunami) {
+            QueryText4(TsunamiT, &wText, &hText);
+            SDL_Rect posTsunami = { posMap.x, posMap.y - hText + posMap.h, wText,hText };
+            SDL_RenderCopy(Renderer, TsunamiT, NULL, &posTsunami);
+        }
         for (i = 0;i < LMAP;i++) {
             for (j = 0;j < HMAP;j++) {
                 //QueryText(CaseT, &wText, &hText);
@@ -286,17 +312,10 @@ void Afficher() {
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
                 SDL_Rect posObject = { ObjectIsoP.x - posxy.x - arrond(300 * Zoom),ObjectIsoP.y - posxy.y,wText,hText };
                 if (Grid[j][i].Object == MOUNTAIN) {
-                    //SDL_SetTextureColorMod(CaseT, 152, 57, 0);
                 }
                 else if (Grid[j][i].Object == RIVER) {
-                    //SDL_SetTextureColorMod(CaseT, 100, 100, 250);
-                    /*wText = arrond(CaseL.x * Zoom*1.8);
-                    hText = arrond(CaseL.y * Zoom*1.8);
-                    SDL_Rect posRiver = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * i) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText / 2,wText,hText };
-                    SDL_RenderCopy(Renderer, CaseT, NULL, &posRiver);*/
                 }
                 else if (Grid[j][i].Object == SEA) {
-                    //SDL_SetTextureColorMod(CaseT, 30, 0, 200);
                 }
                 else if (Grid[j][i].Object == FOREST) {
                     if (Grid[j][i].State == 4) {
@@ -537,7 +556,10 @@ void Afficher() {
         SDL_RenderCopy(Renderer, SnowT[cptSnow], NULL, &posMeteo);
     }
 
-    //HUD HAUT
+    
+    
+
+    //HUD MENU & UPSCREEN
     if (Menu == ESCAPE) {
         SDL_Rect posNoir = { arrond(1000 * Zoom),arrond(450 * Zoom),arrond(ScreenL.x - 2000 * Zoom), arrond(ScreenL.y - 900 * Zoom) };
         SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
@@ -573,8 +595,55 @@ void Afficher() {
         SDL_RenderCopy(Renderer, SpeedT[0], NULL, &posSpeed);
         posSpeed.x += arrond(70 * Zoom);
 
+        if ((Ress.Trees <= 0 || Ress.Pop <= 0  || Year >= YEARMAX ) && timerVictory == 0) {
+            timerVictory = SDL_GetTicks();
+        }
+        
+        else if (SDL_GetTicks() - timerVictory < 4000) {
+            wText = 100 * Zoom;
+            hText = 100 * Zoom;
+            SDL_Rect posFin = { 0,0,wText,hText };
+            int nbFin = (SDL_GetTicks() - timerVictory) / 10;
+
+            while (nbFin>=0) {
+                if (Year >= YEARMAX) {
+                    //win
+                    posFin.x = wText * nbFin % ScreenL.x;
+                    posFin.y = wText * wText * nbFin / ScreenL.x;
+                    SDL_RenderCopy(Renderer, InteractT[0], NULL, &posFin);
+                    if (Ress.Animals) {
+                        posFin.x = ScreenL.x - posFin.x - wText;
+                        posFin.y = ScreenL.y - posFin.y - hText;
+                        SDL_RenderCopy(Renderer, AnimalsT, NULL, &posFin);
+                    }
+                }
+                else {
+                    posFin.x = rand() % ScreenL.x - wText;
+                    posFin.y = rand() % ScreenL.y - hText;
+                    if (Ress.Trees <= 0)
+                        SDL_RenderCopy(Renderer, PopT, NULL, &posFin);
+                    else 
+                        SDL_RenderCopy(Renderer, LogoTreeT, NULL, &posFin);
+                }
+                nbFin--;
+            }
+            if (Year >= YEARMAX) {
+                SDL_QueryTexture(WinT, NULL, NULL, &wText, &hText);
+                SDL_SetTextureColorMod(WinT, 100, 255, 100);
+                SDL_Rect posWin = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 600 * Zoom),wText,hText };
+                SDL_RenderCopy(Renderer, WinT, NULL, &posWin);
+            }
+            else {
+                SDL_QueryTexture(LoseT, NULL, NULL, &wText, &hText);
+                SDL_SetTextureColorMod(LoseT, 255, 100, 100);
+                SDL_Rect posLose = { arrond(ScreenL.x / 2 - wText / 2), arrond(ScreenL.y / 2 - hText / 2 - 600 * Zoom),wText,hText };
+                SDL_RenderCopy(Renderer, LoseT, NULL, &posLose);
+            }
+        }
+
     }
     else {
+        timerVictory = 0;
         if (Menu == NONE) {
             SDL_Rect posNoir = { 0,0,ScreenL.x, arrond(100 * Menu * Zoom) };
             SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);

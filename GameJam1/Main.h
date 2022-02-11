@@ -38,6 +38,8 @@ extern int Year;
 extern int triggerCold;
 extern int rain;
 extern int fire;
+extern int avalanche;
+extern int tsunami;
 extern int timeTurn;
 extern int timegame;
 extern int SousMenu;
@@ -77,6 +79,7 @@ extern Ressources Ress;
 #define ERAMED 20
 #define ERACONT 100
 #define YEARS_PER_SEASON  30//30
+#define YEARMAX 10//1000
 
 enum Actions { PLANT, RAIN, COLD, METEOR, DEVOUR, DROWN, NO_ACTION, NB_ACTIONS };
 extern Actions lastAction;
