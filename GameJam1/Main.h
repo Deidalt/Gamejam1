@@ -90,4 +90,7 @@ int GetSickNumber();
 const char* GetPeriodName();
 const char* GetEraName();
 
+extern bool IsGlacialSeason();
+extern bool IsDrySeason();
+
 #endif

@@ -17,7 +17,7 @@ struct sTree {
 void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
     //Text rendering
     //can write one line
-    SDL_Surface* HudRessS = TTF_RenderText_Solid(ft, chaine, color);
+    SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
     SDL_Texture* HudRessT = SDL_CreateTextureFromSurface(Renderer, HudRessS);
     SDL_Rect posT = { posft.x,posft.y,HudRessS->w,HudRessS->h };
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
@@ -67,15 +67,17 @@ static inline const char* const ActionName() {
     return names[getCurrentAction()];
 }
 
+enum { PRINTEMPS, ETE, HIVER, AUTOMNE = PRINTEMPS };
+
 void Afficher() {
-    SDL_FPoint CaseL = { LCASE + 0.7,HCASE + 0.1 };
+    SDL_FPoint CaseL = { LCASE + 0.7f,HCASE + 0.1f };
     SDL_SetRenderDrawColor(Renderer, 16, 8, 21, 255);
     SDL_RenderClear(Renderer);
     static int Initialised = 0;
     int i = 0, j = 0; //loop
     int wText = 0, hText = 0, wText2, hText2; //dimensions des textures récupérées
-    char buff1[100];
-    char buff2[50];
+    char buff1[100]; 
+    char buff2[50] = {};
     static sTree posTree[30][30];
 
     static TTF_Font* ArialNarrowB32 = TTF_OpenFont("ttf/Arial-Narrow-Bold.ttf", 32);
@@ -131,7 +133,8 @@ void Afficher() {
             FrameT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
-        for (i = 0;i < 3;i++) {
+
+        for (i = 0; i < 3;i++) {
             sprintf(buff1, "Assets/Map/Relief%c.png", 'A' + i);
             MapRe1T[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Map/MAP_base%c.png", 'A' + i);
@@ -142,7 +145,7 @@ void Afficher() {
         for (i = 0;i < 7;i++) {
             sprintf(buff1, "Assets/Fx/Pluie/Pluie_%05d.png", i);
             RainT[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Fx/UI//Logos/Int%d.png", i);
+            sprintf(buff1, "Assets/UI/Logos/Int%d.png", i);
             InteractT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 80;i++) {
@@ -171,11 +174,11 @@ void Afficher() {
         BlueFilterT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/Tiles/Other/moulin.png");
         MillT = IMG_LoadTexture(Renderer, buff1);
-        sprintf(buff1, "Assets/Tiles/UI/apple.png");
+        sprintf(buff1, "Assets/UI/Logos/apple.png");
         AppleT = IMG_LoadTexture(Renderer, buff1);
-        sprintf(buff1, "Assets/Tiles/UI/population.png");
+        sprintf(buff1, "Assets/UI/Logos/population.png");
         PopT = IMG_LoadTexture(Renderer, buff1);
-        sprintf(buff1, "Assets/Tiles/UI/animals.png");
+        sprintf(buff1, "Assets/UI/Logos/animals.png");
         AnimalsT = IMG_LoadTexture(Renderer, buff1);
         Year = 1; //Game Starts here
         timegame = SDL_GetTicks();
@@ -184,31 +187,33 @@ void Afficher() {
 
 
 
-    int Period = (Year / YEARS_PER_SEASON) % 4;
-    if (Period == 2)
-        Period = 0;
-    if (Period == 3)
-        Period = 2;
+    int period = PRINTEMPS;
+    if (IsDrySeason()) {
+        period = ETE;
+    }
+    else if (IsGlacialSeason()) {
+        period = HIVER;
+    }
 
     //Background and base Map
     QueryText4(BackgroundT, &wText, &hText);
-    QueryText4(MapBase1T[Period], &wText2, &hText2);
+    QueryText4(MapBase1T[period], &wText2, &hText2);
     //SDL_Rect posBackground = { -posxy.x + wText2-wText/2,-posxy.y+hText2/2-hText/2,wText,hText };
     SDL_Rect posBackground = { 0,0,wText,hText };
     SDL_RenderCopy(Renderer, BackgroundT, NULL, &posBackground);
     SDL_Rect posMap = { -posxy.x,-posxy.y,wText2,hText2 };
-    SDL_RenderCopy(Renderer, MapBase1T[Period], NULL, &posMap);
-    /*QueryText(MapBase2T[Period], &wText2, &hText2);
+    SDL_RenderCopy(Renderer, MapBase1T[period], NULL, &posMap);
+    /*QueryText(MapBase2T[period], &wText2, &hText2);
     SDL_Rect posMap2 = { posMap.x+posMap.w,posMap.y,wText2,hText2 };
-    SDL_RenderCopy(Renderer, MapBase2T[Period], NULL, &posMap2);*/
-    QueryText4(MapRe1T[Period], &wText, &hText);
-    SDL_Rect posMapRe1 = { posMap.x,arrond(posMap.y - hText + posMap.h),wText,hText };
-    SDL_RenderCopy(Renderer, MapRe1T[Period], NULL, &posMapRe1);
-    /*QueryText(MapRe2T[Period], &wText, &hText);
+    SDL_RenderCopy(Renderer, MapBase2T[period], NULL, &posMap2);*/
+    QueryText4(MapRe1T[period], &wText, &hText);
+    SDL_Rect posMapRe1 = { posMap.x, posMap.y - hText + posMap.h, wText,hText };
+    SDL_RenderCopy(Renderer, MapRe1T[period], NULL, &posMapRe1);
+    /*QueryText(MapRe2T[period], &wText, &hText);
     SDL_Rect posMapRe2 = { arrond(posMap.x+4895*Zoom7K),arrond(posMap.y - hText + posMap.h),wText,hText };
-    SDL_RenderCopy(Renderer, MapRe2T[Period], NULL, &posMapRe2);*/
-    QueryText4(RiverT[Period], &wText, &hText);
-    SDL_Rect posRiver = { arrond(posMap.x),arrond(posMap.y + posMap.h - hText),wText,hText };
+    SDL_RenderCopy(Renderer, MapRe2T[period], NULL, &posMapRe2);*/
+    QueryText4(RiverT[period], &wText, &hText);
+    SDL_Rect posRiver = { posMap.x, posMap.y + posMap.h - hText, wText, hText };
     if (Ress.River) {
         SDL_RenderCopy(Renderer, RiverT[Ress.River - 1], NULL, &posRiver);
     }
@@ -247,7 +252,7 @@ void Afficher() {
                     }
                     if (Grid[j][i].State > 4) { //fire
                         static int cptFire = 0;
-                        static int timerFire = SDL_GetTicks() + 83;
+                        static unsigned int timerFire = SDL_GetTicks() + 83;
                         if (timerFire < SDL_GetTicks()) {
                             cptFire++;
                             if (cptFire > 5)
@@ -256,6 +261,7 @@ void Afficher() {
                             timerFire < SDL_GetTicks();
                             timerFire = SDL_GetTicks() + 83;
                         }
+
                         QueryText4(FireT[cptFire], &wText, &hText);
                         SDL_Rect posFire = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
                         SDL_RenderCopy(Renderer, FireT[cptFire], NULL, &posFire);
@@ -314,13 +320,13 @@ void Afficher() {
                             }
 
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            if (Period < 2) {
+                            if (period < 2) {
                                 SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
                             }
                             else if (triggerCold) {
                                 SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
                             }
-                            else if (Period == 2) {
+                            else if (period == 2) {
                                 SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
                             }
                         }
@@ -329,7 +335,7 @@ void Afficher() {
                         for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
                             QueryText(TreeAT[idtree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
-                            if (Period < 2) {
+                            if (period < 2) {
                                 SDL_SetTextureColorMod(TreeAT[idtree], 255, 10, 50);
                                 SDL_RenderCopy(Renderer, TreeAT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeAT[idtree], 255, 255, 255);
@@ -339,7 +345,7 @@ void Afficher() {
                                 SDL_RenderCopy(Renderer, TreeBT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeBT[idtree], 255, 255, 255);
                             }
-                            else if (Period == 2) {
+                            else if (period == 2) {
                                 SDL_SetTextureColorMod(TreeCT[idtree], 255, 10, 50);
                                 SDL_RenderCopy(Renderer, TreeCT[idtree], NULL, &posFinal);
                                 SDL_SetTextureColorMod(TreeCT[idtree], 255, 255, 255);
@@ -596,12 +602,8 @@ void Afficher() {
         SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame2);
         posFrame2.x += arrond(200 * Zoom) - 8;
         SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame2);
-<<<<<<< Updated upstream
-        if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && Period!=3) || (j == 3 && era==0)) {
-=======
 
         if (getCurrentAction() == j || (j==1 && rain>0) || (j == 2 && period!=3) || (j == 3 && era==0)) {
->>>>>>> Stashed changes
             //CD
             SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
             posBlue.y += arrond(200 * Zoom - posBlue.h);
