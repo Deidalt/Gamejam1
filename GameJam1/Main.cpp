@@ -28,6 +28,7 @@ int triggerCold = 0; //Cold action
 int riverDryness = 0;
 int rain = 0; //rain action
 int fire = 0; //fire event
+int hospitalCount = 0;
 Menus Menu = NONE; 
 int ActionAuto = 0; //if not 0, action is save for when it is possible
 int timeTurn = TIMETURN;
@@ -52,11 +53,13 @@ void NoAction();
 
 void Fire();
 
-static inline bool IsGlacialEpoch();
-static inline bool IsDryEpoch();
+bool IsGlacialSeason();
+bool IsDrySeason();
 static inline int GetColdResistance();
 
 static inline void ManageSeasons();
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 int main(int argc, char* argv[])
 {
@@ -98,6 +101,7 @@ int main(int argc, char* argv[])
 	Grid[5][10].id = rand() % 4;
 	
 	Afficher(); //init game
+	timegame = SDL_GetTicks();
 
 	while (EndMain) {
 		if (Year >= 0 && Menu>=NONE) {
@@ -158,13 +162,13 @@ static inline int GetColdResistance() {
 }
 
 static inline float GetFieldProductivity() {
-	return (30.f - (riverDryness/era < 30 ? riverDryness/era : 30)) / 30.f;
+	return (30.f - (riverDryness / era < 30 ? (float)(riverDryness / era) : 30)) / 30.f;
 }
 
 static inline void ManageSeasons() {
 	if (triggerCold > 0) {
-		if (IsGlacialEpoch()) {
-			if (triggerCold >= GetColdResistance()) { // Note : pas de game over possible par le froid
+		if (IsGlacialSeason()) {
+			if (triggerCold >= GetColdResistance() && hospitalCount < 1) { // Note : pas de game over possible par le froid
 				int dead = (int)(0.05 * Ress.Pop);
 				Ress.Pop -= dead;
 			}
@@ -182,9 +186,10 @@ static inline void ManageSeasons() {
 			rain = 0;
 		}
 	}
-	if (IsDryEpoch()) {
+
+	if (IsDrySeason()) {
 		ActionAuto = 1;
-		if (fire>0 || rand() % 100 < 50 ) { //3%
+		if (fire > 0 || rand() % 100 < 50 ) { //3%
 			Fire(); //incendie
 		}
 	}
@@ -289,12 +294,12 @@ void Hunt() {
 	Ress.Animals--;
 }
 
-static inline bool IsGlacialEpoch() {
-	return (Year / YEARS_PER_SEASON) %4 == 3;
+bool IsGlacialSeason() {
+	return (Year / YEARS_PER_SEASON) % 4 == 3;
 }
 
-static inline bool IsDryEpoch() {
-	return (Year / YEARS_PER_SEASON) %4 == 1;
+bool IsDrySeason() {
+	return (Year / YEARS_PER_SEASON) % 4 == 1;
 }
 
 static inline void BuildHut() {
@@ -367,13 +372,15 @@ void BuildShip() {
 	Ress.Treecut++;
 	int Built = 0;
 	while (!Built) {
-		int Rcase = rand() % ((LMAP - 2) * 2) ; //cases au centre de la mer
-		int CaseJ = Rcase / (LMAP - 2);
-		int CaseI = Rcase % (LMAP - 2);
-		if (Grid[1+CaseI][28+CaseJ].Object == SEA) {
+		int Rcase = rand() % ((LMAP - 2) * 2); //cases au centre de la mer
+		int CaseJ = 28 + Rcase / (LMAP - 2);
+		int CaseI = 1 + Rcase % (LMAP - 2);
+		CaseJ = MIN(CaseJ, HMAP - 1);
+		CaseI = MIN(CaseI, LMAP - 1);
+		if (Grid[CaseI][CaseJ].Object == SEA) {
 			Built = 1;
-			Grid[1+CaseI][28+CaseJ].Object = SHIP;
-			Grid[1+CaseI][28+CaseJ].State = SDL_GetTicks() + 2000;
+			Grid[CaseI][CaseJ].Object = SHIP;
+			Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 		}
 	}
 }
@@ -417,6 +424,7 @@ void BuildHospi() {
 			if (IsNearHouse(CaseI, CaseJ)) {
 				found = 1;
 				Grid[CaseI][CaseJ].Object = HOSPI;
+				++hospitalCount;
 				Grid[CaseI][CaseJ].State = SDL_GetTicks() + 2000;
 			}
 		}
@@ -561,12 +569,24 @@ void Plant() {
 }
 
 static void FloodCase(int i, int j) {
-	if (IsHabitation(i, j)) {
+	if (IsType(i, j, HUT)) {
 		Grid[i][j].Object = EMPTY_CASE;
 		Ress.Pop -= 1;
 	}
+	else if (IsType(i, j, HOUSE)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		Ress.Pop -= 2;
+	}
+	else if (IsType(i, j, APPART)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		Ress.Pop -= 4;
+	}
 	else if (IsType(i, j, MILL)) {
 		Grid[i][j].Object = EMPTY_CASE;
+	}
+	else if (IsType(i, j, HOSPI)) {
+		Grid[i][j].Object = EMPTY_CASE;
+		--hospitalCount;
 	}
 }
 
@@ -630,7 +650,7 @@ void Rain() {
 		}
 		else
 			Ress.River = 1;
-		if (fire) {
+		if (fire > 0) {
 			for (int i = COL_FOREST; i < COL_FOREST+FOREST_W; i++) {
 				for (int j = LINE_FOREST; j < LINE_FOREST+FOREST_H; j++) {
 					if (IsType(i, j, FOREST) && Grid[i][j].State > 4) {
@@ -649,7 +669,7 @@ void Rain() {
 }
 
 void Cold() {
-	if (IsGlacialEpoch()) {
+	if (IsGlacialSeason()) {
 		triggerCold = 1;
 	}
 }
@@ -685,8 +705,8 @@ void Drown() {
 }
 
 void SetAsAction(Actions action) {
-	bool incendie = false;
-	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDryEpoch()) || (action == COLD && !IsGlacialEpoch()) || (incendie && action == PLANT)) {
+	bool incendie = fire > 0;
+	if ((action == METEOR && era == TRIBAL) || (action == RAIN && IsDrySeason()) || (action == COLD && !IsGlacialSeason()) || (incendie && action == PLANT)) {
 		return;
 	}
 	else if (rain > 0) {

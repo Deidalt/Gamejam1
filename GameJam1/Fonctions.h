@@ -10,3 +10,4 @@ void QueryText2(SDL_Texture* Texture, int* wText, int* hText);
 
 
 #endif
+

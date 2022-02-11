@@ -14,15 +14,43 @@ struct sTree {
     SDL_Point posArb[4]; 
 };
 
-void TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft) {
+static inline void DisplayTexts(TTF_Font* ArialNarrowB32);
+int TTFrender(const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Point posft, bool solid=false);
+
+void TTFprerender(const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Texture** texture, int* w, int* h) {
+    SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
+    *texture = SDL_CreateTextureFromSurface(Renderer, HudRessS);
+    *w = HudRessS->w, *h = HudRessS->h;
+    SDL_FreeSurface(HudRessS);
+}
+
+void TTFRenderWithTextBefore(SDL_Texture* prerender, int w, int h, const char* chaine, TTF_Font* ft, SDL_Color color, SDL_Point posft) {
+    SDL_Rect posT = { posft.x, posft.y, w, h };
+
+    SDL_RenderCopy(Renderer, prerender, NULL, &posT);
+
+    posft.x += w;
+    TTFrender(chaine, ft, color, posft, true);
+}
+
+int TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft, bool solid) {
     //Text rendering
     //can write one line
-    SDL_Surface* HudRessS = TTF_RenderText_Blended(ft, chaine, color);
+    SDL_Surface* HudRessS;
+    if (!solid) {
+        HudRessS = TTF_RenderText_Blended(ft, chaine, color);
+    }
+    else {
+        HudRessS = TTF_RenderText_Solid(ft, chaine, color);
+    }
     SDL_Texture* HudRessT = SDL_CreateTextureFromSurface(Renderer, HudRessS);
     SDL_Rect posT = { posft.x,posft.y,HudRessS->w,HudRessS->h };
+
     SDL_RenderCopy(Renderer, HudRessT, NULL, &posT);
     SDL_FreeSurface(HudRessS);
     SDL_DestroyTexture(HudRessT);
+
+    return posft.x + HudRessS->w;
 }
 
 void InitAffichage() {
@@ -229,7 +257,7 @@ void Afficher() {
                 //QueryText(CaseT, &wText, &hText);
                 SDL_Point ObjectP = { i * wText / 2  ,j * hText };
                 SDL_Point ObjectIsoP = ToIso(ObjectP);
-                SDL_Rect posObject = { ObjectIsoP.x - posxy.x - 300 * Zoom,ObjectIsoP.y - posxy.y,wText,hText };
+                SDL_Rect posObject = { ObjectIsoP.x - posxy.x - arrond(300 * Zoom),ObjectIsoP.y - posxy.y,wText,hText };
                 if (Grid[j][i].Object == MOUNTAIN) {
                     //SDL_SetTextureColorMod(CaseT, 152, 57, 0);
                 }
@@ -258,7 +286,6 @@ void Afficher() {
                             if (cptFire > 5)
                                 cptFire = 0;
                             timerFire = SDL_GetTicks() - timerFire + SDL_GetTicks() + 83;
-                            timerFire < SDL_GetTicks();
                             timerFire = SDL_GetTicks() + 83;
                         }
 
@@ -268,7 +295,7 @@ void Afficher() {
                     }
                     int idtree = Grid[j][i].id;
                     if (Grid[j][i].State < 4) {
-                        for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
+                        for (unsigned int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
                             QueryText(TreeAT[Grid[j][i].id], &wText, &hText);
                             //init positions of each tree randomly in his case
                             if (arb == 0) {
@@ -293,7 +320,7 @@ void Afficher() {
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - hText;
                                 }
                                 else if (arb == 2) {
-                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) + arrond(Zoom * CaseL.x * 1.5);
+                                    posTree[j][i].posArb[arb].x = arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) + arrond(Zoom * CaseL.x * 1.5f);
                                     posTree[j][i].posArb[arb].y = arrond((OMAPY + (CaseL.y * (i + 0)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - hText;
                                 }
                                 else if (arb == 3) {
@@ -332,7 +359,7 @@ void Afficher() {
                         }
                     }
                     else if (Grid[j][i].State > 4) {
-                        for (int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
+                        for (unsigned int arb = 0; arb < 4 - Grid[j][i].State % 5; arb++) {
                             QueryText(TreeAT[idtree], &wText, &hText);
                             SDL_Rect posFinal = { posTree[j][i].posArb[arb].x - posxy.x,posTree[j][i].posArb[arb].y - posxy.y,wText,hText };
                             if (period < 2) {
@@ -455,13 +482,12 @@ void Afficher() {
     //FX
     if (rain) {
         static int cptRain = 0;
-        static int timerRain = SDL_GetTicks() + 83;
+        static unsigned int timerRain = SDL_GetTicks() + 83;
         if (timerRain < SDL_GetTicks()) {
             cptRain++;
             if (cptRain > 6) 
                 cptRain = 0;
             timerRain = SDL_GetTicks() - timerRain + SDL_GetTicks() + 83;
-            timerRain < SDL_GetTicks();
             timerRain = SDL_GetTicks() + 83;
         }
         QueryText4(RainT[0], &wText, &hText);
@@ -471,13 +497,12 @@ void Afficher() {
     }
     else if (triggerCold) {
         static int cptSnow = 0;
-        static int timerSnow = SDL_GetTicks() + 83;
+        static unsigned int timerSnow = SDL_GetTicks() + 83;
         if (timerSnow < SDL_GetTicks()) {
             cptSnow++;
             if (cptSnow > 79)
                 cptSnow = 0;
             timerSnow = SDL_GetTicks() - timerSnow + SDL_GetTicks() + 83;
-            timerSnow < SDL_GetTicks();
             timerSnow = SDL_GetTicks() + 83;
         }
         QueryText2(SnowT[0], &wText, &hText);
@@ -487,7 +512,7 @@ void Afficher() {
 
     //HUD HAUT
     if (Menu == NONE) {
-        SDL_Rect posNoir = { 0,0,ScreenL.x,100 * Menu * Zoom };
+        SDL_Rect posNoir = { 0,0,ScreenL.x, arrond(100 * Menu * Zoom) };
         SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
         for (i = 0;i < ScreenL.x / 60 + 1;i++) {
             SDL_Rect posFrame = { i * 60,0,64,8 };
@@ -497,8 +522,8 @@ void Afficher() {
         }
         for (i = 0;i < arrond(100 * Menu * Zoom) / 60 + 1;i++) {
             SDL_Rect posFrame = { 0,i * 60,8,64 };
-            if (posFrame.y + posFrame.h > 100 * Menu * Zoom)
-                posFrame.y = 100 * Menu * Zoom - 64;
+            if (posFrame.y + posFrame.h > arrond(100 * Menu * Zoom))
+                posFrame.y = arrond(100 * Menu * Zoom) - 64;
             SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame);
             posFrame.x = ScreenL.x - 8;
             SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame);
@@ -509,7 +534,7 @@ void Afficher() {
         
     }
     else if (Menu == UIUP) {
-        SDL_Rect posNoir = { 0,0,ScreenL.x,100 * Menu * Zoom };
+        SDL_Rect posNoir = { 0,0,ScreenL.x,arrond(100 * Menu * Zoom) };
         SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
         for (i = 0;i < ScreenL.x / 60 + 1;i++) {
             SDL_Rect posFrame = { i * 60,0,64,8 };
@@ -519,41 +544,13 @@ void Afficher() {
         }
         for (i = 0;i < arrond(100 * Menu * Zoom) / 60 + 1;i++) {
             SDL_Rect posFrame = { 0,i * 60,8,64 };
-            if (posFrame.y + posFrame.h > 100 * Menu * Zoom)
-                posFrame.y = 100 * Menu * Zoom - 64;
+            if (posFrame.y + posFrame.h > arrond(100 * Menu * Zoom))
+                posFrame.y = arrond(100 * Menu * Zoom) - 64;
             SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame);
             posFrame.x = ScreenL.x - 8;
             SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame);
         }
-        sprintf(buff1, "Food  |  Pop=%d Trees=%d Animals=%d  ||  Action=%s [%s]", Ress.Pop, Ress.Trees, Ress.Animals, ActionName(), GetPeriodName());
-        SDL_Point posRess = { arrond(1100 * Zoom), arrond(10 * Zoom) };
-        TTFrender(buff1, ArialNarrowB32, { 255, 255, 255 }, posRess);
-        sprintf(buff1, "-%d", Ress.Pop);
-        posRess.y += arrond(70 * Zoom);
-        TTFrender(buff1, ArialNarrowB32, { 255, 150, 150 }, posRess);
-        sprintf(buff1, "Gathering +5");
-        posRess.y += arrond(70 * Zoom);
-        TTFrender(buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
-        if (Ress.Hunt) {
-            sprintf(buff1, "Hunt +%d", Ress.Hunt * 10);
-            posRess.y += arrond(70 * Zoom);
-            TTFrender(buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
-        }
-        if (Ress.Fish) {
-            sprintf(buff1, "Fish +%d", Ress.Fish * 10);
-            posRess.y += arrond(70 * Zoom);
-            TTFrender(buff1, ArialNarrowB32, { 150,255,150 }, posRess);
-        }
-        if (Ress.Harvest && Ress.River) {
-            sprintf(buff1, "Harvest +%d", Ress.Harvest * 5);
-            posRess.y += arrond(70 * Zoom);
-            TTFrender(buff1, ArialNarrowB32, { 150,255,150 }, posRess);
-        }
-        if (IsColdOn()) {
-            sprintf(buff1, "Sick %d", GetSickNumber());
-            posRess.y += arrond(70 * Zoom);
-            TTFrender(buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
-        }
+        DisplayTexts(ArialNarrowB32);
     }
     QueryText2(SpeedT[0], &wText, &hText);
     SDL_Rect posSpeed = { arrond(20 * Zoom),arrond(20 * Zoom),wText,hText };
@@ -576,9 +573,9 @@ void Afficher() {
         float CDaction = ((SDL_GetTicks() - timegame) % timeTurn) / float(timeTurn);
         if (j == 1) {
             if (rain)
-                CDaction = (CDaction + rain - 1) / 7.0;
+                CDaction = (CDaction + rain - 1) / 7.0f;
             else
-                CDaction = (CDaction + rain) / 7.0;
+                CDaction = (CDaction + rain) / 7.0f;
             //printf("aaa %d %d %.2f\n",rain, (SDL_GetTicks() - timegame) % timeTurn, CDaction);
         }
         else if (j == 2)
@@ -616,4 +613,63 @@ void Afficher() {
     }
 
     SDL_RenderPresent(Renderer);
+}
+
+static inline void DisplayTexts(TTF_Font* ArialNarrowB32) {
+    char buff1[100];
+    static SDL_Texture* startText[5] = { NULL };
+    static int widths[5], heights[5];
+    int i = 0;
+
+    if (startText[0] == NULL) {
+        TTFprerender("Gathering +", ArialNarrowB32, {150, 255, 150}, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Hunt +", ArialNarrowB32, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Fish +", ArialNarrowB32, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Harvest +", ArialNarrowB32, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+        ++i;
+        TTFprerender("Sick +", ArialNarrowB32, { 150, 255, 150 }, &startText[i], &widths[i], &heights[i]);
+    }
+
+    i = 0;
+
+    sprintf(buff1, "Food  |  Pop=%d Trees=%d Animals=%d  ||  Action=%s [%s]", Ress.Pop, Ress.Trees, Ress.Animals, ActionName(), GetPeriodName());
+    SDL_Point posRess = { arrond(1100 * Zoom), arrond(10 * Zoom) };
+    TTFrender(buff1, ArialNarrowB32, { 255, 255, 255 }, posRess);
+    
+    sprintf(buff1, "-%d", Ress.Pop);
+    posRess.y += arrond(70 * Zoom);
+    TTFrender(buff1, ArialNarrowB32, { 255, 150, 150 }, posRess);
+    
+    sprintf(buff1, "5");
+    posRess.y += arrond(70 * Zoom);
+    TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
+    ++i;
+    
+    if (Ress.Hunt) {
+        sprintf(buff1, "%d", Ress.Hunt * 10);
+        posRess.y += arrond(70 * Zoom);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
+    }
+    ++i;
+    if (Ress.Fish) {
+        sprintf(buff1, "%d", Ress.Fish * 10);
+        posRess.y += arrond(70 * Zoom);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
+    }
+    ++i;
+    if (Ress.Harvest && Ress.River) {
+        sprintf(buff1, "%d", Ress.Harvest * 5);
+        posRess.y += arrond(70 * Zoom);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
+    }
+    ++i;
+    if (IsColdOn()) {
+        sprintf(buff1, "%d", GetSickNumber());
+        posRess.y += arrond(70 * Zoom);
+        TTFRenderWithTextBefore(startText[i], widths[i], heights[i], buff1, ArialNarrowB32, { 150, 255, 150 }, posRess);
+    }
+    ++i;
 }

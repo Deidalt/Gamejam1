@@ -144,12 +144,12 @@ void Evenement() {
         posxy.y += arrond(LCASE * Zoom);
     else if (LastMove.y == 4)
         posxy.y -= arrond(LCASE * Zoom);
-    if (posxy.y > 2000 * Zoom)
-        posxy.y = 2000 * Zoom;
-    if (posxy.x > 3000 * Zoom)
-        posxy.x = 3000 * Zoom;
-    if (posxy.x < -2000 * Zoom)
-        posxy.x = -2000 * Zoom;
-    if (posxy.y < -2000 * Zoom)
-        posxy.y = -2000 * Zoom;
+    if (posxy.y > arrond(2000 * Zoom))
+        posxy.y = arrond(2000 * Zoom);
+    if (posxy.x > arrond(3000 * Zoom))
+        posxy.x = arrond(3000 * Zoom);
+    if (posxy.x < arrond(-2000 * Zoom))
+        posxy.x = arrond(-2000 * Zoom);
+    if (posxy.y < arrond(-2000 * Zoom))
+        posxy.y = arrond(-2000 * Zoom);
 }
