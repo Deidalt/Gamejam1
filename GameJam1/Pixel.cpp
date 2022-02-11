@@ -546,7 +546,7 @@ int ChangeColorpx(SDL_Surface* surface, int debut, int fin, int perso) {
                     b = g;
                 }
                 else if (perso == 10) { //blanc
-                    g = ((g + r + b) / 3) * 3.5;
+                    g = (unsigned char)(((g + r + b) / 3) * 3.5f);
                     r = g;
                     b = g;
                 }

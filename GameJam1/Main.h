@@ -45,7 +45,7 @@ typedef enum { EMPTY_CASE, MOUNTAIN, RIVER, SEA, FOREST, HUT, HOUSE, APPART, MIL
 
 struct Case {
 	CaseType Object;//0 = empty, 1= mount,2=river,3=sea,4=tree, 5=hut, 6 =house, 7 =appart ,8 = Mill or Field, 9=Ship
-	int State; //0= Building, 1=Built, 2=Destroyed ; 
+	unsigned int State; //0= Building, 1=Built, 2=Destroyed ; 
 	//State for trees : 0-4 number of tree destroyed, 5 on fire
 	//>10 = building time
 	int id; //4 assets différents
