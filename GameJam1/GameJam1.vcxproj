@@ -152,11 +152,11 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\lib\SDL2-2.0.12\include;$(ProjectDir)\lib\SDL2_ttf-2.0.14\include;$(ProjectDir)\lib\SDL2_image-2.0.5\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2_image.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;Shell32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)\lib\SDL2-2.0.12\lib\x64;$(ProjectDir)\lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)\lib\SDL2_image-2.0.5\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

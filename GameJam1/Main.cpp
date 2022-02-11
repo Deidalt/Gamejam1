@@ -1,4 +1,4 @@
-﻿#define SDL_MAIN_HANDLED
+﻿//#define SDL_MAIN_HANDLED
 
 #include <signal.h>
 #include <SDL_image.h>
@@ -6,6 +6,7 @@
 #include "Affichage.h"
 #include "Evenements.h"
 #include "Pixel.h"
+
 
 //Globals
 SDL_Window* Screen = NULL;
@@ -71,7 +72,7 @@ static inline void ManageSeasons();
 
 int main(int argc, char* argv[])
 {
-	SDL_SetMainReady();
+	//SDL_SetMainReady();
 	InitAffichage();
 	srand((int)time(NULL));
 	int i = 0, j = 0;
@@ -79,34 +80,6 @@ int main(int argc, char* argv[])
 	void (*actions[])() = { Plant, Rain, Cold, Meteor, Devour, Drown, NoAction };
 	
 	SDL_Surface* HitboxRiverS = IMG_Load("Assets/Map/MapHitbox.png");
-	/*lastAction = PLANT;
-	Ress.River = 1;
-	Ress.Harvest = 0;
-	Ress.Fish = 0;
-	Ress.Animals = 15;
-	Ress.Trees = 0;
-	triggerCold = 0;
-	rain = 0;
-	for (i = 0; i < LMAP; i++) { //Init Grille //init map
-		for (j = 0; j < HMAP; j++) {
-			if (j < 3)
-				Grid[i][j].Object = MOUNTAIN;
-			else if (IsSeaLocation(i, j))
-				Grid[i][j].Object = SEA;
-			else if (IsRiverLocation(HitboxRiverS, i, j))
-				Grid[i][j].Object = RIVER;
-			else if (initForestLocation(i, j)) {
-				Grid[i][j].Object = FOREST;
-				Grid[i][j].id = rand() % 4;
-				if (Grid[i][j].id == 1)
-					Grid[i][j].id += rand() % 3;
-			}
-		}
-		Grid[i][j].State = 0;
-	}
-	SDL_FreeSurface(HitboxRiverS);
-	Grid[5][10].Object = HUT;
-	Grid[5][10].id = rand() % 4;*/
 	initGame();
 	
 	Afficher(); //init game
@@ -119,7 +92,6 @@ int main(int argc, char* argv[])
 				Year += 1; //+1 Year every 2 sec
 				timegame = SDL_GetTicks();
 			}
-			//printf("aac %d %d %d\n", rain, (SDL_GetTicks() - timegame) % timeTurn, (SDL_GetTicks() - timegame) / timeTurn);
 			if (PastYear != Year) {
 				//Year changed, Turn calculs
 				if(Ress.Animals)
@@ -128,7 +100,6 @@ int main(int argc, char* argv[])
 				
 				// Repeat last action each turn
 				actions[lastAction]();
-				//printf("AAB %d %d %d\n", rain, (SDL_GetTicks() - timegame) % timeTurn, (SDL_GetTicks() - timegame) / timeTurn);
 
 				ManageSeasons();
 				
@@ -209,7 +180,7 @@ static inline void ManageSeasons() {
 	}
 	else {
 		if (rand() % 100 < 3) { //3%
-			Avalanche();
+			Avalanche(); 
 		}
 		if (ActionAuto == 1) {
 			SetAsAction(RAIN);
@@ -318,7 +289,7 @@ static bool IsNearHouse(int i, int j) {
 
 
 void Hunt() {
-	Ress.Food -= 5;
+	Ress.Food -= 10;
 	Ress.Hunt++;
 	Ress.Animals--;
 }
@@ -507,12 +478,7 @@ void MedievalEra() {
 	Ress.Treecut = 2;
 	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
 	Ress.Food -= 5;
-	if (Revenge) {
-		Revenge = 0;
-		Ress.Food -= 10;
-		Ress.Animals -= 3;
-		Ress.Hunt += 2;
-	}
+	
 	if ( Ress.River) { //works while flood
 		if (Grid[13][20].Object != MILL) {
 			BuildMill();
@@ -530,10 +496,15 @@ void MedievalEra() {
 			//Harvest
 			Ress.Food -= (int)(Ress.Harvest * 5 * GetFieldProductivity());
 		}
-		while (Ress.Food > 0 && Ress.Animals > 0) {
+		while (Ress.Food > 0 && Ress.Animals > 0 && Revenge==0) {
 			Hunt();
 		}
-
+		if (Revenge) {
+			Revenge = 0;
+			Ress.Food -= 10;
+			Ress.Animals -= 3;
+			Ress.Hunt += 2;
+		}
 		while (Ress.Food > 0) {
 			//build new temporary Ship
 			Ress.Food -= 10;
@@ -564,15 +535,9 @@ void ContemporaryEra() {
 	}
 	Ress.Pop += 4;
 	int found = 0;
-	Ress.Treecut = 10;
+	Ress.Treecut = 4;
 	Ress.Food = Ress.Pop; //total Ress.Food to search per turn
 	Ress.Food -= 5;
-	if (Revenge) {
-		Revenge = 0;
-		Ress.Food -= 10;
-		Ress.Animals -= 3;
-		Ress.Hunt += 2;
-	}
 	if (Ress.River) { //works while flood
 		if (Grid[13][20].Object != MILL) {
 			BuildMill();
@@ -613,8 +578,10 @@ void ContemporaryEra() {
 void NoAction() {}
 
 void Plant() {
-	if (fire > 0)
+	if (fire > 0) {
+		SetAsAction(NO_ACTION);
 		return;
+	}
 	int nbTreesAdded = 2+5*era;
 	int Rtree = rand() % (FOREST_H * FOREST_W + 1); //random tree
 	int i = Rtree % FOREST_W; //10col for 10line
@@ -677,8 +644,8 @@ void Fire() {
 	}
 	else {
 		int cptfire = fire + 30; //fire exponential
-		if (era == CONTEMPORARY) //FireStation -50% effect
-			cptfire = cptfire/2;
+		//if (era == CONTEMPORARY) //FireStation -50% effect
+		//	cptfire = cptfire/2;
 		while (Ress.Trees > 0 && cptfire > 0) {
 			int Rtree = rand() % (FOREST_H * FOREST_W + 1); //fire random tree
 			int i = Rtree % FOREST_W; //10col for 10line
@@ -688,15 +655,33 @@ void Fire() {
 					Ress.Trees -= 4 - Grid[COL_FOREST + i][LINE_FOREST + j].State;
 					Grid[COL_FOREST + i][LINE_FOREST + j].State += 5;
 					fire++;
+					break;
 				}
 			}
 			cptfire--;
+		}
+		if (cptfire == 0) {
+			//Fire isolated extinguished
+			for (int i = COL_FOREST; i < COL_FOREST + FOREST_W; i++) {
+				for (int j = LINE_FOREST; j < LINE_FOREST + FOREST_H; j++) {
+					if (IsType(i, j, FOREST) && Grid[i][j].State > 4) {
+						if ((era == CONTEMPORARY && Grid[i + 1][j].State <= 4 && Grid[i - 1][j].State <= 4 && Grid[i][j + 1].State <= 4 && Grid[i][j - 1].State <= 4)
+							|| (era != CONTEMPORARY && Grid[i + 1][j].State == 4 && Grid[i - 1][j].State == 4 && Grid[i][j + 1].State == 4 && Grid[i][j - 1].State == 4)) {
+							//extinguished fire
+							fire--;
+							Grid[i][j].State = 4;
+							i = LMAP;
+							j = LMAP;
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
 void Avalanche() {
-	avalanche = 7;
+	avalanche = 3;
 	for (int i = 0;i < LMAP;i++) {
 		if (Grid[i][3].Object != EMPTY_CASE && Grid[i][3].Object != RIVER) {
 			if (Grid[i][3].Object == FOREST) {
@@ -713,6 +698,7 @@ void Tsunami() {
 	tsunami = 3;
 	Ress.River = 1;
 	riverDryness = 0;
+	Ress.Pop -= Ress.Fish;
 	Ress.Fish = 0;
 	for (int i = 0;i < LMAP;i++) {
 		for (int j = 24;j < HMAP;j++) {
@@ -800,7 +786,6 @@ void Meteor() {
 
 void Devour() {
 	if (Ress.Animals > 0 && Ress.Hunt > 0) {
-		--Ress.Hunt;
 		--Ress.Pop;
 		if (era == MEDIEVAL) {
 			//Revenge //battue au prochain tour
@@ -815,6 +800,7 @@ void Drown() {
 		for (int j = 27; j < HMAP; ++j) {
 			if (Grid[i][j].Object == SHIP) {
 				Grid[i][j].Object = SEA;
+				--Ress.Pop;
 				return;
 			}
 		}

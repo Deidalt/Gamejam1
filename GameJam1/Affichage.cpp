@@ -133,6 +133,8 @@ void Afficher() {
     static SDL_Texture* MillT;
     static SDL_Texture* FieldT[3];
     static SDL_Texture* ShipT;
+    static SDL_Texture* HospitalT;
+    static SDL_Texture* FireStationT;
     static SDL_Texture* RiverT[3];
     static SDL_Texture* RainT[7];
     static SDL_Texture* SnowT[80];
@@ -198,7 +200,7 @@ void Afficher() {
         }
         for (i = 0;i < 80;i++) {
             sprintf(buff1, "Assets/Fx//Neige/Neige 2_%05d.png", i);
-            //SnowT[i] = IMG_LoadTexture(Renderer, buff1);
+            SnowT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 6;i++) {
             sprintf(buff1, "Assets/Fx/Feu/Feu_1_%05d.png", i);
@@ -214,6 +216,10 @@ void Afficher() {
         }
         sprintf(buff1, "Assets/Tiles/Other/Ship.png");
         ShipT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/Other/FireStation.png");
+        FireStationT = IMG_LoadTexture(Renderer, buff1);
+        sprintf(buff1, "Assets/Tiles/Other/Hospital.png");
+        HospitalT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/Tiles/construction.png");
         BuildingT = IMG_LoadTexture(Renderer, buff1);
         sprintf(buff1, "Assets/UI/FondNoir.png");
@@ -608,10 +614,14 @@ void Afficher() {
                     SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
                 }
                 else if (Grid[j][i].Object == HOSPI) {
-                    //SDL_SetTextureColorMod(CaseT, 255, 255, 255);
+                    QueryText4(HospitalT, &wText, &hText);
+                    SDL_Rect posHospital = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                    SDL_RenderCopy(Renderer, HospitalT, NULL, &posHospital);
                 }
                 else if (Grid[j][i].Object == FIRESTATION) {
-                    //SDL_SetTextureColorMod(CaseT, 255, 0, 0);
+                    QueryText4(FireStationT, &wText, &hText);
+                    SDL_Rect posFireStation = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                    SDL_RenderCopy(Renderer, FireStationT, NULL, &posFireStation);
                 }
                 else if (Grid[j][i].Object == BARRAGE) {
                     //SDL_SetTextureColorMod(CaseT, 200, 200, 200);
@@ -718,7 +728,6 @@ void Afficher() {
                     //win
                     posFin.x = wText * ((wText*nbFin % ScreenL.x) / wText);
                     posFin.y = hText * (wText * nbFin / ScreenL.x);
-                    printf("aaa %d %d %d\n", posFin.x, posFin.y,nbFin);
                     SDL_RenderCopy(Renderer, InteractT[0], NULL, &posFin);
                     if (Ress.Animals) {
                         posFin.x = ScreenL.x - posFin.x - wText;
@@ -929,13 +938,16 @@ void Afficher() {
                     CDaction = (CDaction + rain - 1) / 7.0f;
                 else
                     CDaction = (CDaction + rain) / 7.0f;
-                //printf("aaa %d %d %.2f\n",rain, (SDL_GetTicks() - timegame) % timeTurn, CDaction);
             }
             else if (j == 2) {
                 CDaction = float((Year % (YEARS_PER_SEASON * 4)) % (YEARS_PER_SEASON * 3)) / (YEARS_PER_SEASON * 3);
+                if (IsColdOn())
+                    CDaction = 0;
             }
             else if (j == 3 && era == 0)
                 CDaction = float(Ress.Pop) / ERAMED;
+            else if (j == 0 && fire > 0)
+                CDaction = 0;
 
             if (CDaction < 0)
                 CDaction = 0;
@@ -943,7 +955,12 @@ void Afficher() {
             SDL_Rect posNoir = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond(200 * Zoom) };
             SDL_RenderCopy(Renderer, BlackBgT, NULL, &posNoir);
             SDL_RenderCopy(Renderer, InteractT[j], NULL, &posNoir);
-
+            if (getCurrentAction() == j) {
+                SDL_SetTextureColorMod(FrameT[0], 0, 0, 0);
+                SDL_SetTextureColorMod(FrameT[1], 0, 0, 255);
+                SDL_SetTextureColorMod(FrameT[2], 255, 0, 0);
+                SDL_SetTextureColorMod(FrameT[3], 0, 255, 0);
+            }
             SDL_Rect posFrame = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),8 };
             SDL_RenderCopy(Renderer, FrameT[0], NULL, &posFrame);
             posFrame.y += arrond(200 * Zoom) - 8;
@@ -953,8 +970,13 @@ void Afficher() {
             SDL_RenderCopy(Renderer, FrameT[2], NULL, &posFrame2);
             posFrame2.x += arrond(200 * Zoom) - 8;
             SDL_RenderCopy(Renderer, FrameT[3], NULL, &posFrame2);
-
-            if (getCurrentAction() == j || (j == 1 && (rain > 0 || period == ETE)) || (j == 2 && period != HIVER) || (j == 3 && era == 0)) {
+            if (getCurrentAction() == j) {
+                SDL_SetTextureColorMod(FrameT[0], 255,255, 255);
+                SDL_SetTextureColorMod(FrameT[1], 255,255, 255);
+                SDL_SetTextureColorMod(FrameT[2], 255,255, 255);
+                SDL_SetTextureColorMod(FrameT[3], 255,255, 255);
+            }
+            if (getCurrentAction() == j || (j == 1 && (rain > 0 || period == ETE)) || (j == 2 && (period != HIVER || IsColdOn())) || (j == 3 && era == 0) || (j==0 && fire>0)) {
                 //CD
                 SDL_Rect posBlue = { arrond(200 * Zoom + j * 220 * Zoom),arrond(1900 * Zoom),arrond(200 * Zoom),arrond((200 - 200 * CDaction) * Zoom) };
                 posBlue.y += arrond(200 * Zoom - posBlue.h);
