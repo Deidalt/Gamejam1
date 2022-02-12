@@ -67,13 +67,13 @@ void Evenement() {
                     LastMove.x = 1;
                 }
                 else if (eventV.key.keysym.scancode == SDL_SCANCODE_A || eventV.key.keysym.scancode == SDL_SCANCODE_LEFT) {//Gauche
-                    LastMove.x = 2;
+                    LastMove.x = -1;
                 }
                 else if (eventV.key.keysym.scancode == SDL_SCANCODE_S || eventV.key.keysym.scancode == SDL_SCANCODE_DOWN) {//BAS
-                    LastMove.y = 3;
+                    LastMove.y = 1;
                 }
                 else if (eventV.key.keysym.scancode == SDL_SCANCODE_W || eventV.key.keysym.scancode == SDL_SCANCODE_UP) {//Haut
-                    LastMove.y = 4;
+                    LastMove.y = -1;
                 }
 
 
@@ -186,9 +186,23 @@ void Evenement() {
                         }
                     }
                     else if (eventV.button.y > 1900 * Zoom && eventV.button.y < 2100 * Zoom) {
-                        for (int i = 0;i < 7;i++) {
+                        for (int i = 0;i < 8;i++) {
                             if (eventV.button.x > 200 * Zoom + i * 220 * Zoom && eventV.button.x < 400 * Zoom + i * 220 * Zoom) {
-                                SetAsAction(Actions(i));
+                                if (i == 7) {
+                                    if (Mix_PausedMusic() == 1)
+                                    {
+                                        //Resume the music
+                                        Mix_ResumeMusic();
+                                    }
+                                    //If the music is playing
+                                    else
+                                    {
+                                        //Pause the music
+                                        Mix_PauseMusic();
+                                    }
+                                }
+                                else
+                                    SetAsAction(Actions(i));
                                 break;
                             }
                         }
@@ -221,19 +235,33 @@ void Evenement() {
                     }
                 }
             }
+            else {
+                if(LastMove.x%2==0)
+                    LastMove.x = 0;
+                if (LastMove.y % 2 == 0)
+                    LastMove.y = 0;
+                if (eventV.motion.x > ScreenL.x-100*Zoom) 
+                    LastMove.x = 2;
+                else if (eventV.motion.x < 100*Zoom) 
+                    LastMove.x = -2;
+                if (eventV.motion.y > ScreenL.y-20*Zoom) 
+                    LastMove.y = 2;
+                else if (eventV.motion.y < 20*Zoom) 
+                    LastMove.y = -2;
+            }
         }
         default:
             break;
         }
 	}//fin while event
-    if(LastMove.x==1)
-        posxy.x += arrond(LCASE * Zoom);
-    else if (LastMove.x == 2)
-        posxy.x -= arrond(LCASE * Zoom);
-    if (LastMove.y == 3)
-        posxy.y += arrond(LCASE * Zoom);
-    else if (LastMove.y == 4)
-        posxy.y -= arrond(LCASE * Zoom);
+    if(LastMove.x>0)
+        posxy.x += arrond(LCASE * Zoom/2);
+    else if (LastMove.x <0)
+        posxy.x -= arrond(LCASE * Zoom/2);
+    if (LastMove.y > 0)
+        posxy.y += arrond(LCASE * Zoom/2);
+    else if (LastMove.y < 0)
+        posxy.y -= arrond(LCASE * Zoom/2);
     if (posxy.y > arrond(2000 * Zoom))
         posxy.y = arrond(2000 * Zoom);
     if (posxy.x > arrond(3000 * Zoom))

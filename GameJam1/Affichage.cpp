@@ -114,22 +114,23 @@ int TTFrender(const char *chaine, TTF_Font *ft, SDL_Color color, SDL_Point posft
 
 void InitAffichage() {
     //Libs init
-    Screen = SDL_CreateWindow("Hello", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED); //SDL_WINDOW_FULLSCREEN_DESKTOP //
+    Screen = SDL_CreateWindow("Life Experiment", 0, 0, 640, 480, SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP); //SDL_WINDOW_FULLSCREEN_DESKTOP //
     if (Screen == NULL)
-        printf("NULL Window\n");
-    Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
-    if (Renderer == NULL)
-        printf("NULL renderer\n");
-    if (TTF_Init() == -1)
-        printf("TTF %s\n", TTF_GetError());
-
-    SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Assets/UI/Logos/Int0.png", "rb"), 1);
+        printf("NULL Window\n"); 
+    SDL_Surface* IconeExe = IMG_Load_RW(SDL_RWFromFile("Assets/icon.png", "rb"), 1);
 
     if (IconeExe == NULL)
         printf("ICONULL %s\n", SDL_GetError());
 
     SDL_SetWindowIcon(Screen, IconeExe);
     SDL_FreeSurface(IconeExe);
+    Renderer = SDL_CreateRenderer(Screen, -1, SDL_RENDERER_ACCELERATED); //SDL_RENDERER_PRESENTVSYNC //SDL_RENDERER_TARGETTEXTURE
+    if (Renderer == NULL)
+        printf("NULL renderer\n");
+    if (TTF_Init() == -1)
+        printf("TTF %s\n", TTF_GetError());
+
+    
     //SDL_RenderSetLogicalSize(Renderer,Wecran/Zoom4K,Hecran/Zoom4K); //resize tout l'écran
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best"); //utile pour les rotations de Sdl_renderCopyEx
@@ -192,7 +193,7 @@ void Afficher() {
     static SDL_Texture* ShipT;
     static SDL_Texture* HospitalT;
     static SDL_Texture* FireStationT;
-    static SDL_Texture* RiverT[3];
+    static SDL_Texture* RiverT[4];
     static SDL_Texture* RainT[7];
     static SDL_Texture* SnowT[80];
     static SDL_Texture* FireT[6];
@@ -242,14 +243,15 @@ void Afficher() {
             FrameT[i] = IMG_LoadTexture(Renderer, buff1);
 
         }
-
+        for (i = 0;i < 4;i++) {
+            sprintf(buff1, "Assets/Tiles/River/river%d.png", i);
+            RiverT[i] = IMG_LoadTexture(Renderer, buff1);
+        }
         for (i = 0; i < 3;i++) {
             sprintf(buff1, "Assets/Map/Relief%c.png", 'A' + i);
             MapRe1T[i] = IMG_LoadTexture(Renderer, buff1);
             sprintf(buff1, "Assets/Map/MAP_base%c.png", 'A' + i);
             MapBase1T[i] = IMG_LoadTexture(Renderer, buff1);
-            sprintf(buff1, "Assets/Tiles/River/river%d.png", i);
-            RiverT[i] = IMG_LoadTexture(Renderer, buff1);
         }
         for (i = 0;i < 8;i++) {
             if (i < 7) {
@@ -369,7 +371,12 @@ void Afficher() {
     QueryText4(RiverT[period], &wText, &hText);
     SDL_Rect posRiver = { posMap.x, posMap.y + posMap.h - hText, wText, hText };
     if (Ress.River) {
-        SDL_RenderCopy(Renderer, RiverT[Ress.River - 1], NULL, &posRiver);
+        if(IsColdOn())
+            SDL_RenderCopy(Renderer, RiverT[3], NULL, &posRiver);
+        else if(IsGlacialSeason())
+            SDL_RenderCopy(Renderer, RiverT[2], NULL, &posRiver);
+        else
+            SDL_RenderCopy(Renderer, RiverT[Ress.River - 1], NULL, &posRiver);
     }
 
     if (1) { //refaire
@@ -552,7 +559,7 @@ void Afficher() {
                         }
                     }
                     else {
-                        if (Grid[j][i].State < SDL_GetTicks())
+                        if (Grid[j][i].State > 1 && Grid[j][i].State < SDL_GetTicks())
                             Grid[j][i].State = 1;
                         QueryText(HouseAT[Grid[j][i].id], &wText, &hText);
                         SDL_Rect posHouseA = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
@@ -590,7 +597,7 @@ void Afficher() {
 
                         }
                         else {
-                            if (Grid[j][i].State < SDL_GetTicks())
+                            if (Grid[j][i].State > 1 && Grid[j][i].State < SDL_GetTicks())
                                 Grid[j][i].State = 1;
                             //SDL_SetTextureColorMod(CaseT, 204, 0, 204);
                             QueryText4(HouseBT[Grid[j][i].id], &wText, &hText);
@@ -647,7 +654,7 @@ void Afficher() {
 
                         }
                         else {
-                            if (Grid[j][i].State < SDL_GetTicks())
+                            if (Grid[j][i].State > 1 && Grid[j][i].State < SDL_GetTicks())
                                 Grid[j][i].State = 1;
                            // SDL_SetTextureColorMod(CaseT, 230, 153, 0);
                             QueryText4(MillT, &wText, &hText);
@@ -686,7 +693,7 @@ void Afficher() {
 
                             }
                             else {
-                                if (Grid[j][i].State < SDL_GetTicks())
+                                if (Grid[j][i].State > 1 && Grid[j][i].State < SDL_GetTicks())
                                     Grid[j][i].State = 1;
                                 int idField = 1;
                                 if (Ress.River == 0)
@@ -700,10 +707,22 @@ void Afficher() {
                     }
                 }
                 else if (Grid[j][i].Object == SHIP) {
-                    //SDL_SetTextureColorMod(CaseT, 255, 255, 255);
-                    QueryText4(ShipT, &wText, &hText);
-                    SDL_Rect posShip = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
-                    SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
+                    if (Grid[j][i].State > SDL_GetTicks()) {
+                        //Building Ship
+                        QueryText4(FieldT[0], &wText, &hText);
+                        SDL_Rect posField = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, BuildingT, NULL, &posField);
+
+                    }
+                    else {
+                        if (Grid[j][i].State > 1 && Grid[j][i].State < SDL_GetTicks()) {
+                            Grid[j][i].State = 1;
+                            Ress.Fish++;
+                        }
+                        QueryText4(ShipT, &wText, &hText);
+                        SDL_Rect posShip = { arrond((CaseL.x * (LMAP - i - 1) + CaseL.x * j - DECALAGE) * Zoom) - posxy.x, arrond((OMAPY + (CaseL.y * (i + 1)) - (CaseL.y * (LMAP - j - 1))) * Zoom) - posxy.y - hText,wText,hText };
+                        SDL_RenderCopy(Renderer, ShipT, NULL, &posShip);
+                    }
                 }
                 else if (Grid[j][i].Object == HOSPI) {
                     QueryText4(HospitalT, &wText, &hText);
