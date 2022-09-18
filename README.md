@@ -1,4 +1,4 @@
-# Life Experiment
+# ![](https://raw.githubusercontent.com/Deidalt/Gamejam1/main/GameJam1/Assets/icon.png) Life Experiment
 
 ## Description
 
@@ -10,7 +10,7 @@ You can do 1 action per year:
 
 1 - Make it rain
 
-2 - Summon the cold (only in glacial era)
+2 - Summon the cold (only in glacial season)
 
 3 - Meteors!!
 
@@ -23,6 +23,21 @@ You can do 1 action per year:
 7 - Mute music
 
 Don't worry, it's possible to survive 500 years. Good luck!
+
+## Images
+
+Dry season:
+
+![](https://img.itch.zone/aW1hZ2UvMTM5NTYxMi84MTMzMTA0LnBuZw==/original/9%2BklNt.png)
+
+Temperate season:
+
+![](https://img.itch.zone/aW1hZ2UvMTM5NTYxMi84MTMzMTA2LnBuZw==/original/mhOi4M.png)
+
+Glacial season:
+
+![](https://img.itch.zone/aW1hZ2UvMTM5NTYxMi84MTMzMTMxLnBuZw==/original/9y0Dtr.png)
+
 
 ## Context
 
