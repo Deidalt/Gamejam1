@@ -12,7 +12,7 @@ You can do 1 action per year:
 
 2 - Summon the cold (only in glacial era)
 
-3 - Meteors !!
+3 - Meteors!!
 
 4 - Devour a hunter
 
@@ -22,7 +22,7 @@ You can do 1 action per year:
 
 7 - Mute music
 
-Don't worry it's possible to survive 500 Years, good luck !
+Don't worry, it's possible to survive 500 years. Good luck!
 
 ## Context
 
@@ -30,7 +30,7 @@ This game has been created for the [SDL Enthusiasts 1K members GameJam](https://
 
 ## Credits
 
-💻 Devs: [Deidal](https://github.com/Deidalt/), [Zavezrienvu](https://github.com/LeponceA)
+💻 Devs: [Deidal](https://github.com/Deidalt/) (game concept + main dev), [Zavezrienvu](https://github.com/LeponceA)
 
 🎨 Art: [Primevert](https://justine-hwang.tumblr.com/)
 
