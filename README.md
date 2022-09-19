@@ -49,4 +49,4 @@ This game has been created for the [SDL Enthusiasts 1K members GameJam](https://
 
 🎨 Art: [Primevert](https://justine-hwang.tumblr.com/)
 
-🎵 Sound: Ziassan
+🎵 Sound: [Ziassan](https://soundcloud.com/ziassan)
